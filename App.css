@@ -1,0 +1,219 @@
+/* App container */
+.app-container {
+  display: flex;
+  height: 100vh;
+  background-color: #1f2937;
+  color: white;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 16rem;
+  background-color: #111827;
+  transition: width 0.3s;
+  overflow: hidden;
+}
+
+.sidebar-hidden {
+  width: 0;
+}
+
+.sidebar-content {
+  padding: 1rem;
+}
+
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.sidebar-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.list-item {
+  margin-bottom: 0.25rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.list-item:hover {
+  background-color: #4b5563;
+}
+
+.list-item.selected {
+  background-color: #2563eb;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  background-color: #374151;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.menu-button {
+  margin-right: 1rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.app-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Table container */
+.table-container {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.data-table {
+  min-width: 100%;
+  background-color: #374151;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.table-header {
+  background-color: #4b5563;
+}
+
+.table-header th {
+  padding: 0.5rem 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.table-row {
+  border-top: 1px solid #4b5563;
+}
+
+.table-row:hover {
+  background-color: #4b5563;
+}
+
+.table-cell {
+  padding: 0.75rem 1rem;
+}
+
+/* Status badges */
+.website-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+.has-website {
+  background-color: #16a34a;
+}
+
+.no-website {
+  background-color: #dc2626;
+}
+
+.website-link {
+  margin-top: 0.25rem;
+}
+
+.website-link a {
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+}
+
+.website-link a:hover {
+  text-decoration: underline;
+}
+
+.social-links {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.social-link {
+  color: #60a5fa;
+}
+
+/* Interest levels */
+.interest-select,
+.contact-status-select {
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  color: white;
+}
+
+.interested {
+  background-color: #34d399;
+}
+
+.very-interested {
+  background-color: #16a34a;
+}
+
+.almost-sold {
+  background-color: #0891b2;
+}
+
+.sold {
+  background-color: #3b82f6;
+}
+
+.dead {
+  background-color: #dc2626;
+}
+
+/* Contact statuses */
+.not-contacted {
+  background-color: #475569;
+}
+
+.waiting {
+  background-color: #eab308;
+}
+
+.follow-up {
+  background-color: #a855f7;
+}
+
+/* Contact methods */
+.contact-methods {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.contact-button {
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  background-color: #6b7280;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.contacted {
+  background-color: #16a34a;
+}

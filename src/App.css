@@ -1,38 +1,919 @@
-.App {
-  text-align: center;
+/* ==========================================================================
+   1. LAYOUT & CONTAINERS
+   ========================================================================== */
+
+/* App container */
+.app-container {
+  display: flex;
+  height: 100vh;
+  background-color: #1f2937;
+  color: white;
+  font-size: 0.6875rem; /* 11px */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* Main content */
+.main-content {
+  flex: 1;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Table container */
+.table-container {
+  flex: 1;
+  overflow: auto;
+  padding: 0.75rem;
+}
+
+.data-table {
+  min-width: 100%;
+  background-color: #374151;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   2. HEADER
+   ========================================================================== */
+
+.header {
+  background-color: #374151;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.menu-button {
+  margin-right: 1rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.app-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   3. SIDEBAR STYLES
+   ========================================================================== */
+
+.sidebar {
+  width: 16rem;
+  background-color: #111827;
+  transition: width 0.3s;
+  overflow: hidden;
+}
+
+.sidebar-hidden {
+  width: 0;
+}
+
+.sidebar-content {
+  padding: 1rem;
+}
+
+.sidebar-title {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 0.6rem;
+}
+
+.sidebar-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.sidebar-section ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.list-item {
+  margin-bottom: 0.2rem;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2d3748;
+  border: 1px solid #4a5568;
+  transition: all 0.2s ease;
+}
+
+.list-item:hover {
+  background-color: #4a5568;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.list-item.selected {
+  background-color: #3182ce;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 1px #4299e1;
+}
+
+.list-name {
+  flex: 1; /* This makes the name take up all available space */
+  cursor: pointer;
+}
+
+.delete-list-button {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem;
+  transition: color 0.2s;
+  z-index: 2; /* Ensure button is above the li click area */
+}
+
+.delete-list-button:hover {
+  color: #ef4444;
+}
+
+/* ==========================================================================
+   4. TABLE STYLES
+   ========================================================================== */
+
+.table-header {
+  background-color: #4b5563;
+}
+
+.table-header th {
+  padding: 0.3rem 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.6875rem; /* 11px */
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.table-row {
+  border-top: 1px solid #4b5563;
+}
+
+/* Add background color for converted leads */
+.table-row.converted {
+  background-color: rgba(
+    16,
+    185,
+    129,
+    0.15
+  ); /* Light green with transparency */
+}
+
+.table-row:hover {
+  background-color: #4b5563;
+}
+
+/* Font size for specific table data */
+.table-cell {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.625rem; /* 10px equivalent in rem */
+}
+
+/* Sort indicators */
+.sort-indicator {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: 0.6875rem; /* 11px */
+  transition: transform 0.2s ease;
+}
+
+.ascending {
+  transform: rotate(180deg);
+}
+
+.descending {
+  transform: rotate(0deg);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ==========================================================================
+   5. BUTTON STYLES
+   ========================================================================== */
+
+/* Button styles */
+.add-lead-button {
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.4rem 0.75rem;
+  margin-left: auto;
+  cursor: pointer;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.025em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.add-lead-button:hover {
+  background-color: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.add-list-button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.add-list-button:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+}
+
+.delete-lead-button {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.delete-lead-button:hover {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.cancel-button {
+  background-color: #4b5563;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.cancel-button:hover {
+  background-color: #6b7280;
+}
+
+.submit-button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Edit Button */
+.edit-button {
+  padding: 6px; /* Equal padding on all sides for a square button */
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  transition: background-color 0.2s;
+}
+
+.edit-button:hover {
+  background-color: #1d4ed8; /* Darker blue on hover */
+}
+
+.edit-button:active {
+  background-color: #1e40af; /* Even darker when clicked */
+  transform: translateY(1px); /* Slight push effect */
+}
+
+/* Center edit button in table cell */
+.table-cell .edit-button {
+  margin: 0 auto;
+  display: block;
+}
+
+/* ==========================================================================
+   6. CONTACT METHODS
+   ========================================================================== */
+
+/* Contact methods */
+.contact-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  max-width: 120px; /* Adjust based on your table width */
+}
+
+/* Individual contact buttons */
+.contact-button {
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  background-color: #6b7280;
+  border: none;
   color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
-.App-link {
-  color: #61dafb;
+.contact-button:hover {
+  background-color: #4b5563;
+  transform: translateY(-1px);
 }
 
-@keyframes App-logo-spin {
+.contact-button:active {
+  transform: translateY(0);
+}
+
+.contact-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Style for contacted buttons */
+.contacted {
+  background-color: #16a34a;
+}
+
+.contacted:hover {
+  background-color: #15803d;
+}
+
+/* Add a tooltip/count for multiple contacts via same method */
+.contact-button .contact-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #3b82f6;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: bold;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Copyable contact info */
+.contact-info {
+  position: relative;
+  cursor: pointer;
+}
+
+.contact-info:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.copy-tooltip {
+  visibility: hidden;
+  position: absolute;
+  right: -70px;
+  background-color: #374151;
+  color: white;
+  border: 1px solid #4b5563;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.625rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.contact-info:hover .copy-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.copied {
+  background-color: #16a34a !important;
+}
+
+/* ==========================================================================
+   7. WEBSITE & SOCIAL LINKS
+   ========================================================================== */
+
+/* Website status styling */
+.website-status {
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  width: fit-content;
+}
+
+.has-website {
+  background-color: #16a34a;
+}
+
+.no-website {
+  background-color: #dc2626;
+}
+
+/* Make the website box clickable */
+.clickable-website {
+  cursor: pointer;
+  text-decoration: none;
+  color: white;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.clickable-website:hover {
+  background-color: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Style for the inline icon */
+.inline-icon {
+  margin-left: 0.3rem;
+}
+
+.website-link {
+  margin-top: 0.25rem;
+}
+
+.website-link a {
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.website-link a:hover {
+  text-decoration: underline;
+}
+
+.social-links {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.social-link {
+  color: #60a5fa;
+}
+
+.social-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==========================================================================
+   8. INTEREST LEVELS & CONTACT STATUS
+   ========================================================================== */
+
+/* Interest levels */
+.interest-select,
+.contact-status-select {
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  color: white;
+  font-size: 0.6875rem; /* 11px */
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+.interested {
+  background-color: #34d399;
+}
+
+.very-interested {
+  background-color: #16a34a;
+}
+
+.almost-sold {
+  background-color: #0891b2;
+}
+
+.sold {
+  background-color: #3b82f6;
+}
+
+.dead {
+  background-color: #dc2626;
+}
+
+/* Contact statuses */
+.not-contacted {
+  background-color: #475569;
+}
+
+.waiting {
+  background-color: #eab308;
+}
+
+.follow-up {
+  background-color: #a855f7;
+}
+
+/* ==========================================================================
+   9. MODAL STYLES
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #1f2937;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 60rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid #374151;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #374151;
+  padding-bottom: 0.75rem;
+}
+
+.modal-header h2 {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.close-button:hover {
+  opacity: 1;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 0.25rem;
+  font-size: 0.6875rem; /* 11px */
+  color: #e5e7eb;
+  font-weight: 500;
+}
+
+.form-input {
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 0.25rem;
+  padding: 0.4rem;
+  color: white;
+  font-size: 0.6875rem; /* 11px */
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  border-color: #60a5fa;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid #374151;
+  padding-top: 0.75rem;
+}
+
+.right-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* ==========================================================================
+   10. NOTES STYLES
+   ========================================================================== */
+
+/* Notes related styles */
+.notes-input {
+  grid-column: 1 / -1; /* Make the notes textarea span all columns */
+}
+
+.notes-textarea {
+  min-height: 80px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.notes-textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* New notes history styles */
+.notes-add-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.notes-add-button {
+  align-self: flex-end;
+  margin-top: 0.25rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.7rem;
+}
+
+.notes-history {
+  margin-top: 1rem;
+  border-top: 1px solid #374151;
+  padding-top: 1rem;
+}
+
+.notes-history h4 {
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  color: #e5e7eb;
+}
+
+.notes-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.note-item {
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+  font-size: 0.6875rem;
+}
+
+.note-date {
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.delete-note-button {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  transition: color 0.2s;
+}
+
+.delete-note-button:hover {
+  color: #ef4444;
+}
+
+.note-content {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: #e5e7eb;
+  white-space: pre-wrap;
+}
+
+/* ==========================================================================
+   11. EXPANDING ROWS & ANIMATION
+   ========================================================================== */
+
+.expanded-content {
+  background-color: #2d3748;
+  border: none !important; /* Remove all borders */
+  max-height: 0;
+  padding: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, padding 0.3s ease-out,
+    opacity 0.3s ease-out;
+  opacity: 0;
+  margin-top: -1px; /* Overlap any gap */
+}
+
+.expanded-content.animating {
+  max-height: 1000px; /* Large enough to fit your content */
+  padding: 1rem;
+  opacity: 1;
+  border: none !important; /* Ensure no border when animating */
+}
+
+.expanded-row {
+  border: none !important; /* Remove all borders completely */
+}
+
+.expanded-content:not(.animating) {
+  border: none !important;
+}
+
+.expanded-notes {
+  max-width: 100%;
+}
+
+.expanded-notes h4 {
+  font-size: 0.8rem;
+  margin: 0 0 0.5rem 0; /* Top, right, bottom, left - explicitly setting all margins */
+  color: #e5e7eb;
+}
+
+.expanded-notes-list {
+  max-height: none;
+  margin-bottom: 0;
+}
+
+@keyframes fadeIn {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    max-height: 0;
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    max-height: 500px;
   }
+}
+
+/* Highlighted row with expanded content */
+.table-row.row-expanded {
+  outline: 2px solid #3282ce;
+  position: relative;
+  z-index: 2;
+  border-bottom: none !important; /* Force remove bottom border */
+  margin-bottom: -1px; /* Negative margin to overlap borders */
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* Expanded content highlighting */
+.expanded-row .expanded-content.animating {
+  outline: 2px solid #3282ce;
+  outline-top: none;
+  position: relative;
+  z-index: 1;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.table-row.row-expanded,
+.expanded-row .expanded-content.animating {
+  box-shadow: 0 0 5px rgba(50, 130, 206, 0.3);
+}
+
+/* Only apply border radius to top and bottom elements respectively */
+.table-row.row-expanded {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.expanded-row .expanded-content.animating {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.expanded-row .expanded-content {
+  border: none !important; /* Remove all borders */
+}
+
+/* ==========================================================================
+   12. FONT SIZE OVERRIDES
+   ========================================================================== */
+
+/* Override font sizes for table data elements but preserve other styles */
+.table-cell select,
+.table-cell .website-status,
+.contact-button,
+.edit-button {
+  font-size: 0.75rem; /* Keep controls slightly larger for usability */
+}
+
+/* Override all fonts to 11px */
+.table-cell,
+.table-cell > div,
+.table-cell select,
+.table-cell .website-status,
+.contact-button,
+.edit-button,
+.table-cell:nth-child(1),  /* Business Name */
+.table-cell:nth-child(2),  /* Contact Person */
+.table-cell:nth-child(3) > div,  /* Contact Info */
+.table-cell:nth-child(7),  /* Industry */
+.table-cell:nth-child(8),  /* Last Contact Date */
+.form-input,
+.form-group label,
+.modal-header h2,
+.cancel-button,
+.submit-button,
+.add-lead-button,
+.add-list-button,
+.list-name,
+.delete-list-button,
+.copy-tooltip {
+  font-size: 0.6875rem; /* 11px */
 }
