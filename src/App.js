@@ -526,71 +526,57 @@ const App = () => {
   useEffect(() => {
     const fetchCustomLists = async () => {
       try {
+        // Get all existing lists
         const listData = await listService.getLists();
 
-        if (listData.length === 0) {
-          // If no lists exist, create default lists
-          const defaultLists = [
-            {
-              name: 'Hot Leads',
-              filterType: 'interestLevel',
-              filterValue: 'Hot',
-            },
-            {
-              name: 'Almost Converted',
-              filterType: 'interestLevel',
-              filterValue: 'Hot',
-            },
-            {
-              name: 'Converted Clients',
-              filterType: 'interestLevel',
-              filterValue: 'Converted',
-            },
-            {
-              name: 'Need Follow Up',
-              filterType: 'contactStatus',
-              filterValue: 'In Discussion',
-            },
-            {
-              name: 'No Response',
-              filterType: 'contactStatus',
-              filterValue: 'Proposal Sent',
-            },
-            {
-              name: 'Not Contacted',
-              filterType: 'contactStatus',
-              filterValue: 'Initial Outreach',
-            },
-            {
-              name: 'No Website',
-              filterType: 'hasWebsite',
-              filterValue: false,
-            },
-          ];
+        // Delete all existing lists first
+        await Promise.all(
+          listData.map((list) => listService.deleteList(list.id))
+        );
 
-          // Add each default list to Firebase
-          const savedLists = await Promise.all(
-            defaultLists.map((list) => listService.addList(list))
-          );
+        // Define only the specific default lists you want
+        const defaultListsConfig = [
+          {
+            name: 'Cold Leads',
+            filterType: 'interestLevel',
+            filterValue: 'Cold',
+          },
+          {
+            name: 'Warm Leads',
+            filterType: 'interestLevel',
+            filterValue: 'Warm',
+          },
+          {
+            name: 'Hot Leads',
+            filterType: 'interestLevel',
+            filterValue: 'Hot',
+          },
+          {
+            name: 'Converted Leads',
+            filterType: 'interestLevel',
+            filterValue: 'Converted',
+          },
+          {
+            name: 'Inactive Leads',
+            filterType: 'interestLevel',
+            filterValue: 'Inactive',
+          },
+        ];
 
-          // Transform saved lists to include filter functions
-          const listsWithFilters = savedLists.map((list) => ({
-            ...list,
-            filter: createFilterFunction(list.filterType, list.filterValue),
-          }));
+        // Create the new lists
+        const savedLists = await Promise.all(
+          defaultListsConfig.map((list) => listService.addList(list))
+        );
 
-          setCustomLists(listsWithFilters);
-        } else {
-          // Transform fetched lists to include filter functions
-          const listsWithFilters = listData.map((list) => ({
-            ...list,
-            filter: createFilterFunction(list.filterType, list.filterValue),
-          }));
+        // Transform lists to include filter functions
+        const listsWithFilters = savedLists.map((list) => ({
+          ...list,
+          filter: createFilterFunction(list.filterType, list.filterValue),
+        }));
 
-          setCustomLists(listsWithFilters);
-        }
+        setCustomLists(listsWithFilters);
       } catch (error) {
-        console.error('Error fetching custom lists:', error);
+        console.error('Error managing custom lists:', error);
       }
     };
 
@@ -1342,7 +1328,13 @@ const App = () => {
                     <td className="table-cell">
                       {lead.hasWebsite ? (
                         <a
-                          href={lead.website}
+                          href={
+                            lead.website &&
+                            (lead.website.startsWith('http://') ||
+                              lead.website.startsWith('https://'))
+                              ? lead.website
+                              : `https://${lead.website}`
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
                           className={`website-status has-website clickable-website`}
