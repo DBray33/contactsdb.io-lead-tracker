@@ -536,55 +536,62 @@ const App = () => {
       try {
         // Get all existing lists
         const listData = await listService.getLists();
+        console.log('Fetched custom lists:', listData); // For debugging
 
-        // Delete all existing lists first
-        await Promise.all(
-          listData.map((list) => listService.deleteList(list.id))
-        );
+        let listsToUse = listData;
 
-        // Define only the specific default lists you want
-        const defaultListsConfig = [
-          {
-            name: 'Cold Leads',
-            filterType: 'interestLevel',
-            filterValue: 'Cold',
-          },
-          {
-            name: 'Warm Leads',
-            filterType: 'interestLevel',
-            filterValue: 'Warm',
-          },
-          {
-            name: 'Hot Leads',
-            filterType: 'interestLevel',
-            filterValue: 'Hot',
-          },
-          {
-            name: 'Converted Leads',
-            filterType: 'interestLevel',
-            filterValue: 'Converted',
-          },
-          {
-            name: 'Inactive Leads',
-            filterType: 'interestLevel',
-            filterValue: 'Inactive',
-          },
-        ];
+        // If there are no lists at all, create the default ones
+        if (listData.length === 0) {
+          // Define the default lists
+          const defaultListsConfig = [
+            {
+              name: 'Cold Leads',
+              filterType: 'interestLevel',
+              filterValue: 'Cold',
+            },
+            {
+              name: 'Warm Leads',
+              filterType: 'interestLevel',
+              filterValue: 'Warm',
+            },
+            {
+              name: 'Hot Leads',
+              filterType: 'interestLevel',
+              filterValue: 'Hot',
+            },
+            {
+              name: 'Converted Leads',
+              filterType: 'interestLevel',
+              filterValue: 'Converted',
+            },
+            {
+              name: 'Inactive Leads',
+              filterType: 'interestLevel',
+              filterValue: 'Inactive',
+            },
+          ];
 
-        // Create the new lists
-        const savedLists = await Promise.all(
-          defaultListsConfig.map((list) => listService.addList(list))
-        );
+          // Create the new lists
+          const savedLists = await Promise.all(
+            defaultListsConfig.map((list) => listService.addList(list))
+          );
+
+          listsToUse = savedLists;
+        }
 
         // Transform lists to include filter functions
-        const listsWithFilters = savedLists.map((list) => ({
+        const listsWithFilters = listsToUse.map((list) => ({
           ...list,
-          filter: createFilterFunction(list.filterType, list.filterValue),
+          filter: createFilterFunction(
+            list.filterType,
+            list.filterValue,
+            list.filterValues || []
+          ),
         }));
 
         setCustomLists(listsWithFilters);
       } catch (error) {
-        console.error('Error managing custom lists:', error);
+        console.error('Error fetching custom lists:', error);
       }
     };
 
