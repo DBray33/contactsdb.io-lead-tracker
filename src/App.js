@@ -324,22 +324,157 @@ const initialLeads = [
 // -------------------- COMPONENT DEFINITION --------------------
 // Lead tracking app component
 const App = () => {
+  // Function to render multi-criteria form fields
+  const renderMultiCriteriaForm = () => (
+    <>
+      <div className="form-group">
+        <label>Exclude Interest Levels</label>
+        <div className="selected-values" style={{ marginBottom: '10px' }}>
+          {selectedInterestLevels.map((value, index) => (
+            <div
+              key={index}
+              style={{
+                display: 'inline-block',
+                background: '#4b5563',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                margin: '0 5px 5px 0',
+              }}>
+              {value}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedInterestLevels(
+                    selectedInterestLevels.filter((v) => v !== value)
+                  );
+                }}
+                style={{
+                  marginLeft: '5px',
+                  background: 'none',
+                  border: 'none',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}>
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+        <select
+          className="form-input"
+          value=""
+          onChange={(e) => {
+            if (
+              e.target.value &&
+              !selectedInterestLevels.includes(e.target.value)
+            ) {
+              setSelectedInterestLevels([
+                ...selectedInterestLevels,
+                e.target.value,
+              ]);
+            }
+          }}>
+          <option value="">Select interest level to exclude...</option>
+          <option value="Cold">Cold</option>
+          <option value="Warm">Warm</option>
+          <option value="Hot">Hot</option>
+          <option value="Converted">Converted</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label>Exclude Contact Statuses</label>
+        <div className="selected-values" style={{ marginBottom: '10px' }}>
+          {selectedContactStatuses.map((value, index) => (
+            <div
+              key={index}
+              style={{
+                display: 'inline-block',
+                background: '#4b5563',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                margin: '0 5px 5px 0',
+              }}>
+              {value}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedContactStatuses(
+                    selectedContactStatuses.filter((v) => v !== value)
+                  );
+                }}
+                style={{
+                  marginLeft: '5px',
+                  background: 'none',
+                  border: 'none',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}>
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+        <select
+          className="form-input"
+          value=""
+          onChange={(e) => {
+            if (
+              e.target.value &&
+              !selectedContactStatuses.includes(e.target.value)
+            ) {
+              setSelectedContactStatuses([
+                ...selectedContactStatuses,
+                e.target.value,
+              ]);
+            }
+          }}>
+          <option value="">Select contact status to exclude...</option>
+          <option value="Not Contacted">Not Contacted</option>
+          <option value="Initial Outreach">Initial Outreach</option>
+          <option value="In Discussion">In Discussion</option>
+          <option value="Proposal Sent">Proposal Sent</option>
+          <option value="Negotiating">Negotiating</option>
+          <option value="Under Review">Under Review</option>
+          <option value="Contract Sent">Contract Sent</option>
+          <option value="Future Opportunity">Future Opportunity</option>
+          <option value="Onboarding">Onboarding</option>
+          <option value="Maintenance">Maintenance</option>
+          <option value="Dormant">Dormant</option>
+          <option value="Lost">Lost</option>
+        </select>
+      </div>
+    </>
+  );
+
   // -------------------- STATE DECLARATIONS --------------------
   // All useState hooks to manage component state
-  const [leads, setLeads] = useState([]);
-  const [filteredLeads, setFilteredLeads] = useState([]);
-  const [loading, setLoading] = useState(true); // Add loading state
+
+  // === DATA STATE ===
+  // Primary data and filtering state
+  const [leads, setLeads] = useState([]); // All leads from Firebase
+  const [filteredLeads, setFilteredLeads] = useState([]); // Leads after filtering
+  const [loading, setLoading] = useState(true); // Loading state indicator
+
+  // Sorting and filtering controls
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending',
   });
-  const [sidebarVisible, setSidebarVisible] = useState(true);
   const [selectedIndustry, setSelectedIndustry] = useState('All');
   const [customLists, setCustomLists] = useState([]);
   const [selectedList, setSelectedList] = useState('All Leads');
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  // Add the new state variables here
+  // === UI STATE ===
+  // Layout and display state
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [expandedRows, setExpandedRows] = useState({}); // Track expanded lead rows
+  const [animatingRows, setAnimatingRows] = useState({}); // Animation state for rows
+
+  // === FORM STATE ===
+  // New lead form state
   const [showNewLeadForm, setShowNewLeadForm] = useState(false);
   const [newLead, setNewLead] = useState({
     businessName: '',
@@ -357,33 +492,35 @@ const App = () => {
     interestLevel: 'Cold',
     industry: '',
     lastContactDate: getTodayFormatted(),
-    contactStatus: 'Not Contacted', // Changed from 'Not Contacted'
+    contactStatus: 'Not Contacted',
     contactMethods: [],
-    notes: [], // Changed from string to array
+    notes: [],
   });
-  // New state for current note being composed
-  const [currentNote, setCurrentNote] = useState('');
+  const [currentNote, setCurrentNote] = useState(''); // For composing new notes
 
-  // New list form state
+  // Edit lead form state
+  const [showEditLeadForm, setShowEditLeadForm] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
+  const [editingCurrentNote, setEditingCurrentNote] = useState('');
+
+  // New industry form state
+  const [showNewIndustryForm, setShowNewIndustryForm] = useState(false);
+  const [newIndustry, setNewIndustry] = useState('');
+
+  // === CUSTOM LIST FORM STATE ===
+  // Basic list form state
   const [showNewListForm, setShowNewListForm] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [newListType, setNewListType] = useState('interestLevel');
   const [newListValue, setNewListValue] = useState('Cold');
-  const [newListValues, setNewListValues] = useState([]); // Add this for multiple values
-  const [tempValue, setTempValue] = useState(''); // Add this for temporary value input
-  // Industry form state
-  const [showNewIndustryForm, setShowNewIndustryForm] = useState(false);
-  const [newIndustry, setNewIndustry] = useState('');
-  // Edit leads
-  const [showEditLeadForm, setShowEditLeadForm] = useState(false);
-  const [editingLead, setEditingLead] = useState(null);
-  // State for edit form current note
-  const [editingCurrentNote, setEditingCurrentNote] = useState('');
-  // Expanded rows state
-  const [expandedRows, setExpandedRows] = useState({});
-  // Rows details slide animation
-  // Add this to your state declarations
-  const [animatingRows, setAnimatingRows] = useState({});
+
+  // Multi-value list state
+  const [newListValues, setNewListValues] = useState([]); // For multiple values (industry)
+  const [tempValue, setTempValue] = useState(''); // Temporary input value
+
+  // Multi-criteria exclusion state
+  const [selectedInterestLevels, setSelectedInterestLevels] = useState([]); // Interest levels to exclude
+  const [selectedContactStatuses, setSelectedContactStatuses] = useState([]); // Contact statuses to exclude
 
   // -------------------- EFFECT HOOKS --------------------
   // useEffect hooks for side effects
@@ -510,24 +647,72 @@ const App = () => {
   }, []);
 
   // Helper function to create filter functions based on stored criteria
-  const createFilterFunction = (filterType, filterValue, filterValues = []) => {
+  const createFilterFunction = (
+    filterType,
+    filterValue,
+    filterValues = [],
+    excludeInterestLevels = [],
+    excludeContactStatuses = []
+  ) => {
+    // Create base filter based on primary filter type
+    let baseFilter;
     switch (filterType) {
       case 'interestLevel':
-        return (lead) => lead.interestLevel === filterValue;
+        // If we have multiple values, check if lead's interestLevel is in the array
+        if (filterValues && filterValues.length > 0) {
+          baseFilter = (lead) => filterValues.includes(lead.interestLevel);
+        } else {
+          baseFilter = (lead) => lead.interestLevel === filterValue;
+        }
+        break;
       case 'contactStatus':
-        return (lead) => lead.contactStatus === filterValue;
+        // If we have multiple values, check if lead's contactStatus is in the array
+        if (filterValues && filterValues.length > 0) {
+          baseFilter = (lead) => filterValues.includes(lead.contactStatus);
+        } else {
+          baseFilter = (lead) => lead.contactStatus === filterValue;
+        }
+        break;
       case 'industry':
         // If we have multiple values, check if lead's industry is in the array
         if (filterValues && filterValues.length > 0) {
-          return (lead) => filterValues.includes(lead.industry);
+          baseFilter = (lead) => filterValues.includes(lead.industry);
+        } else {
+          baseFilter = (lead) => lead.industry === filterValue;
         }
-        // Otherwise fall back to single value match
-        return (lead) => lead.industry === filterValue;
+        break;
       case 'hasWebsite':
-        return (lead) => lead.hasWebsite === filterValue;
+        baseFilter = (lead) => lead.hasWebsite === filterValue;
+        break;
+      case 'multi': // New type for multi-criteria filters
+        baseFilter = () => true; // Start with all leads
+        break;
       default:
-        return () => true;
+        baseFilter = () => true;
     }
+
+    // Return a combined filter function that incorporates exclusions
+    return (lead) => {
+      // First check the base filter
+      if (!baseFilter(lead)) return false;
+
+      // Then check any exclusions
+      if (
+        excludeInterestLevels.length > 0 &&
+        excludeInterestLevels.includes(lead.interestLevel)
+      ) {
+        return false;
+      }
+
+      if (
+        excludeContactStatuses.length > 0 &&
+        excludeContactStatuses.includes(lead.contactStatus)
+      ) {
+        return false;
+      }
+
+      return true;
+    };
   };
 
   // Fetch custom lists from Firebase on component mount
@@ -536,7 +721,6 @@ const App = () => {
       try {
         // Get all existing lists
         const listData = await listService.getLists();
-        console.log('Fetched custom lists:', listData); // For debugging
 
         let listsToUse = listData;
 
@@ -585,7 +769,9 @@ const App = () => {
           filter: createFilterFunction(
             list.filterType,
             list.filterValue,
-            list.filterValues || []
+            list.filterValues || [],
+            list.excludeInterestLevels || [],
+            list.excludeContactStatuses || []
           ),
         }));
 
@@ -947,11 +1133,22 @@ const App = () => {
         filterValue = newListValue === 'true';
       }
 
+      // For multi-criteria filters
+      if (newListType === 'multi') {
+        filterValue = null; // Not using single filterValue
+      }
+
       const newCustomList = {
         name: newListName,
         filterType,
         filterValue,
-        filterValues: filterType === 'industry' ? filterValues : [], // Only store array for industry type
+        filterValues: ['industry', 'interestLevel', 'contactStatus'].includes(
+          filterType
+        )
+          ? filterValues
+          : [],
+        excludeInterestLevels: selectedInterestLevels,
+        excludeContactStatuses: selectedContactStatuses,
       };
 
       const savedList = await listService.addList(newCustomList);
@@ -962,7 +1159,9 @@ const App = () => {
         filter: createFilterFunction(
           filterType,
           filterValue,
-          savedList.filterValues
+          savedList.filterValues,
+          savedList.excludeInterestLevels,
+          savedList.excludeContactStatuses
         ),
       };
 
@@ -973,6 +1172,8 @@ const App = () => {
       setNewListValue('Cold');
       setNewListValues([]);
       setTempValue('');
+      setSelectedInterestLevels([]);
+      setSelectedContactStatuses([]);
     } catch (error) {
       console.error('Error adding list:', error);
     }
@@ -1904,10 +2105,13 @@ const App = () => {
                 <option value="contactStatus">Contact Status</option>
                 <option value="industry">Industry</option>
                 <option value="hasWebsite">Has Website</option>
+                <option value="multi">Multi-Criteria</option>
               </select>
             </div>
 
-            {newListType === 'industry' ? (
+            {newListType === 'multi' ? (
+              renderMultiCriteriaForm()
+            ) : newListType === 'industry' ? (
               <div className="form-group">
                 <label>Industries to Include</label>
                 <div
