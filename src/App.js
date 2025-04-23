@@ -357,7 +357,7 @@ const App = () => {
     interestLevel: 'Cold',
     industry: '',
     lastContactDate: getTodayFormatted(),
-    contactStatus: 'Initial Outreach', // Changed from 'Not Contacted'
+    contactStatus: 'Not Contacted', // Changed from 'Not Contacted'
     contactMethods: [],
     notes: [], // Changed from string to array
   });
@@ -741,7 +741,7 @@ const App = () => {
         interestLevel: 'Cold',
         industry: '',
         lastContactDate: getTodayFormatted(),
-        contactStatus: 'Initial Outreach',
+        contactStatus: 'Not Contacted',
         contactMethods: [],
         notes: [],
       });
@@ -1724,6 +1724,7 @@ const App = () => {
                   value={newLead.contactStatus}
                   onChange={handleNewLeadChange}
                   className="form-input">
+                  <option value="Not Contacted">Not Contacted</option>
                   <option value="Initial Outreach">Initial Outreach</option>
                   <option value="In Discussion">In Discussion</option>
                   <option value="Proposal Sent">Proposal Sent</option>
