@@ -645,6 +645,7 @@
 }
 
 .form-group label {
+  margin-top: 0.5rem;
   margin-bottom: 0.25rem;
   font-size: 0.6875rem; /* 11px */
   color: #e5e7eb;

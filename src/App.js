@@ -327,9 +327,13 @@ const App = () => {
   // Function to render multi-criteria form fields
   const renderMultiCriteriaForm = () => (
     <>
-      <div className="form-group">
-        <label>Exclude Interest Levels</label>
-        <div className="selected-values" style={{ marginBottom: '10px' }}>
+      <div
+        className="form-group"
+        style={{ marginTop: '15px', paddingTop: '10px' }}>
+        <label style={{ marginBottom: '2px', display: 'block' }}>
+          Exclude Interest Levels
+        </label>
+        <div className="selected-values" style={{ marginBottom: '1px' }}>
           {selectedInterestLevels.map((value, index) => (
             <div
               key={index}
@@ -373,7 +377,8 @@ const App = () => {
                 e.target.value,
               ]);
             }
-          }}>
+          }}
+          style={{ marginBottom: '10px' }}>
           <option value="">Select interest level to exclude...</option>
           <option value="Cold">Cold</option>
           <option value="Warm">Warm</option>
@@ -381,11 +386,11 @@ const App = () => {
           <option value="Converted">Converted</option>
           <option value="Inactive">Inactive</option>
         </select>
-      </div>
 
-      <div className="form-group">
-        <label>Exclude Contact Statuses</label>
-        <div className="selected-values" style={{ marginBottom: '10px' }}>
+        <label style={{ marginBottom: '2px', display: 'block' }}>
+          Exclude Contact Statuses
+        </label>
+        <div className="selected-values" style={{ marginBottom: '1px' }}>
           {selectedContactStatuses.map((value, index) => (
             <div
               key={index}
@@ -2116,7 +2121,7 @@ const App = () => {
                 <label>Industries to Include</label>
                 <div
                   className="selected-values"
-                  style={{ marginBottom: '10px' }}>
+                  style={{ marginBottom: '2px' }}>
                   {newListValues.map((value, index) => (
                     <div
                       key={index}
