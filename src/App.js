@@ -369,6 +369,8 @@ const App = () => {
   const [newListName, setNewListName] = useState('');
   const [newListType, setNewListType] = useState('interestLevel');
   const [newListValue, setNewListValue] = useState('Cold');
+  const [newListValues, setNewListValues] = useState([]); // Add this for multiple values
+  const [tempValue, setTempValue] = useState(''); // Add this for temporary value input
   // Industry form state
   const [showNewIndustryForm, setShowNewIndustryForm] = useState(false);
   const [newIndustry, setNewIndustry] = useState('');
@@ -508,13 +510,18 @@ const App = () => {
   }, []);
 
   // Helper function to create filter functions based on stored criteria
-  const createFilterFunction = (filterType, filterValue) => {
+  const createFilterFunction = (filterType, filterValue, filterValues = []) => {
     switch (filterType) {
       case 'interestLevel':
         return (lead) => lead.interestLevel === filterValue;
       case 'contactStatus':
         return (lead) => lead.contactStatus === filterValue;
       case 'industry':
+        // If we have multiple values, check if lead's industry is in the array
+        if (filterValues && filterValues.length > 0) {
+          return (lead) => filterValues.includes(lead.industry);
+        }
+        // Otherwise fall back to single value match
         return (lead) => lead.industry === filterValue;
       case 'hasWebsite':
         return (lead) => lead.hasWebsite === filterValue;
@@ -921,12 +928,12 @@ const App = () => {
     }
   };
 
-  // Add a new custom list
   // Add a custom list with Firebase
   const handleAddList = async () => {
     try {
       let filterType = newListType;
       let filterValue = newListValue;
+      let filterValues = newListValues;
 
       // For hasWebsite, convert string to boolean
       if (newListType === 'hasWebsite') {
@@ -937,6 +944,7 @@ const App = () => {
         name: newListName,
         filterType,
         filterValue,
+        filterValues: filterType === 'industry' ? filterValues : [], // Only store array for industry type
       };
 
       const savedList = await listService.addList(newCustomList);
@@ -944,7 +952,11 @@ const App = () => {
       // Add the filter function
       const listWithFilter = {
         ...savedList,
-        filter: createFilterFunction(filterType, filterValue),
+        filter: createFilterFunction(
+          filterType,
+          filterValue,
+          savedList.filterValues
+        ),
       };
 
       setCustomLists([...customLists, listWithFilter]);
@@ -952,6 +964,8 @@ const App = () => {
       setNewListName('');
       setNewListType('interestLevel');
       setNewListValue('Cold');
+      setNewListValues([]);
+      setTempValue('');
     } catch (error) {
       console.error('Error adding list:', error);
     }
@@ -1886,65 +1900,135 @@ const App = () => {
               </select>
             </div>
 
-            <div className="form-group">
-              <label>Filter Value</label>
-              {newListType === 'interestLevel' && (
-                <select
-                  value={newListValue}
-                  onChange={(e) => setNewListValue(e.target.value)}
-                  className="form-input">
-                  <option value="Cold">Cold</option>
-                  <option value="Warm">Warm</option>
-                  <option value="Hot">Hot</option>
-                  <option value="Converted">Converted</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              )}
-
-              {newListType === 'contactStatus' && (
-                <select
-                  value={newListValue}
-                  onChange={(e) => setNewListValue(e.target.value)}
-                  className="form-input">
-                  <option value="Initial Outreach">Initial Outreach</option>
-                  <option value="In Discussion">In Discussion</option>
-                  <option value="Proposal Sent">Proposal Sent</option>
-                  <option value="Negotiating">Negotiating</option>
-                  <option value="Under Review">Under Review</option>
-                  <option value="Contract Sent">Contract Sent</option>
-                  <option value="Future Opportunity">Future Opportunity</option>
-                  <option value="Onboarding">Onboarding</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Dormant">Dormant</option>
-                  <option value="Lost">Lost</option>
-                </select>
-              )}
-
-              {newListType === 'industry' && (
-                <select
-                  value={newListValue}
-                  onChange={(e) => setNewListValue(e.target.value)}
-                  className="form-input">
+            {newListType === 'industry' ? (
+              <div className="form-group">
+                <label>Industries to Include</label>
+                <div
+                  className="selected-values"
+                  style={{ marginBottom: '10px' }}>
+                  {newListValues.map((value, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: 'inline-block',
+                        background: '#4b5563',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        margin: '0 5px 5px 0',
+                      }}>
+                      {value}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setNewListValues(
+                            newListValues.filter((v) => v !== value)
+                          );
+                        }}
+                        style={{
+                          marginLeft: '5px',
+                          background: 'none',
+                          border: 'none',
+                          color: 'white',
+                          cursor: 'pointer',
+                        }}>
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex' }}>
+                  <input
+                    type="text"
+                    value={tempValue}
+                    onChange={(e) => setTempValue(e.target.value)}
+                    className="form-input"
+                    list="industries"
+                    placeholder="Type an industry"
+                    style={{ flex: 1, marginRight: '10px' }}
+                  />
+                  <button
+                    onClick={() => {
+                      if (tempValue && !newListValues.includes(tempValue)) {
+                        setNewListValues([...newListValues, tempValue]);
+                        setTempValue('');
+                      }
+                    }}
+                    className="add-list-button">
+                    Add
+                  </button>
+                </div>
+                <datalist id="industries">
                   {industries
                     .filter((i) => i !== 'All')
                     .map((industry, index) => (
-                      <option key={index} value={industry}>
-                        {industry}
-                      </option>
+                      <option key={index} value={industry} />
                     ))}
-                </select>
-              )}
+                </datalist>
+              </div>
+            ) : (
+              <div className="form-group">
+                <label>Filter Value</label>
+                {newListType === 'interestLevel' && (
+                  <select
+                    value={newListValue}
+                    onChange={(e) => setNewListValue(e.target.value)}
+                    className="form-input">
+                    <option value="Cold">Cold</option>
+                    <option value="Warm">Warm</option>
+                    <option value="Hot">Hot</option>
+                    <option value="Converted">Converted</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                )}
 
-              {newListType === 'hasWebsite' && (
-                <select
-                  value={newListValue}
-                  onChange={(e) => setNewListValue(e.target.value)}
-                  className="form-input">
-                  <option value="true">Has Website</option>
-                  <option value="false">No Website</option>
-                </select>
-              )}
-            </div>
+                {newListType === 'contactStatus' && (
+                  <select
+                    value={newListValue}
+                    onChange={(e) => setNewListValue(e.target.value)}
+                    className="form-input">
+                    <option value="Not Contacted">Not Contacted</option>
+                    <option value="Initial Outreach">Initial Outreach</option>
+                    <option value="In Discussion">In Discussion</option>
+                    <option value="Proposal Sent">Proposal Sent</option>
+                    <option value="Negotiating">Negotiating</option>
+                    <option value="Under Review">Under Review</option>
+                    <option value="Contract Sent">Contract Sent</option>
+                    <option value="Future Opportunity">
+                      Future Opportunity
+                    </option>
+                    <option value="Onboarding">Onboarding</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Dormant">Dormant</option>
+                    <option value="Lost">Lost</option>
+                  </select>
+                )}
+
+                {newListType === 'industry' && (
+                  <select
+                    value={newListValue}
+                    onChange={(e) => setNewListValue(e.target.value)}
+                    className="form-input">
+                    {industries
+                      .filter((i) => i !== 'All')
+                      .map((industry, index) => (
+                        <option key={index} value={industry}>
+                          {industry}
+                        </option>
+                      ))}
+                  </select>
+                )}
+
+                {newListType === 'hasWebsite' && (
+                  <select
+                    value={newListValue}
+                    onChange={(e) => setNewListValue(e.target.value)}
+                    className="form-input">
+                    <option value="true">Has Website</option>
+                    <option value="false">No Website</option>
+                  </select>
+                )}
+              </div>
+            )}
 
             <div className="modal-footer">
               <button
