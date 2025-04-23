@@ -113,7 +113,7 @@ const getInterestLevelWeight = (interestLevel) => {
 // Helper function to get contact status color
 const getContactStatusColor = (status) => {
   const colors = {
-    'Initial Outreach': 'rgb(71, 85, 105)',
+    'Initial Outreach': 'rgb(100, 116, 139)', // Now using the gray-blue color
     'In Discussion': 'rgb(234, 179, 8)',
     'Proposal Sent': 'rgb(168, 85, 247)',
     Negotiating: 'rgb(6, 182, 212)',
@@ -124,6 +124,7 @@ const getContactStatusColor = (status) => {
     Maintenance: 'rgb(5, 150, 105)',
     Dormant: 'rgb(107, 114, 128)',
     Lost: 'rgb(220, 38, 38)',
+    'Not Contacted': 'rgb(71, 85, 105)', // Now using the original Initial Outreach color
   };
   return colors[status] || 'rgb(71, 85, 105)'; // Default color if not found
 };
@@ -1461,6 +1462,7 @@ const App = () => {
                         <option value="Initial Outreach">
                           Initial Outreach
                         </option>
+                        <option value="Not Contacted">Not Contacted</option>
                         <option value="In Discussion">In Discussion</option>
                         <option value="Proposal Sent">Proposal Sent</option>
                         <option value="Negotiating">Negotiating</option>
