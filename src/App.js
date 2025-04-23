@@ -16,6 +16,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import './App.css';
+import { leadService, listService } from './firebase/leadService';
 
 // -------------------- UTILITY FUNCTIONS --------------------
 // Helper functions defined outside the component
@@ -324,41 +325,16 @@ const initialLeads = [
 const App = () => {
   // -------------------- STATE DECLARATIONS --------------------
   // All useState hooks to manage component state
-  const [leads, setLeads] = useState(initialLeads);
-  const [filteredLeads, setFilteredLeads] = useState(initialLeads);
+  const [leads, setLeads] = useState([]);
+  const [filteredLeads, setFilteredLeads] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending',
   });
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [selectedIndustry, setSelectedIndustry] = useState('All');
-  const [customLists, setCustomLists] = useState([
-    {
-      name: 'Hot Leads',
-      filter: (lead) => lead.interestLevel === 'Hot',
-    },
-    {
-      name: 'Almost Converted',
-      filter: (lead) => lead.interestLevel === 'Hot',
-    },
-    {
-      name: 'Converted Clients',
-      filter: (lead) => lead.interestLevel === 'Converted',
-    },
-    {
-      name: 'Need Follow Up',
-      filter: (lead) => lead.contactStatus === 'In Discussion', // Updated from 'Follow Up'
-    },
-    {
-      name: 'No Response',
-      filter: (lead) => lead.contactStatus === 'Proposal Sent', // Updated from 'Waiting For Response'
-    },
-    {
-      name: 'Not Contacted',
-      filter: (lead) => lead.contactStatus === 'Initial Outreach', // Updated from 'Not Contacted'
-    },
-    { name: 'No Website', filter: (lead) => !lead.hasWebsite },
-  ]);
+  const [customLists, setCustomLists] = useState([]);
   const [selectedList, setSelectedList] = useState('All Leads');
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -512,29 +488,114 @@ const App = () => {
     };
   }, [expandedRows]);
 
-  // Add this useEffect hook to load data on initial render
+  // Fetch leads from Firebase on component mount
   useEffect(() => {
-    const savedLeads = localStorage.getItem('leads');
-    const savedCustomLists = localStorage.getItem('customLists');
+    const fetchLeads = async () => {
+      try {
+        setLoading(true);
+        const leadData = await leadService.getLeads();
+        setLeads(leadData);
+        setFilteredLeads(leadData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching leads:', error);
+        setLoading(false);
+      }
+    };
 
-    if (savedLeads) {
-      setLeads(JSON.parse(savedLeads));
-    }
-
-    if (savedCustomLists) {
-      setCustomLists(JSON.parse(savedCustomLists));
-    }
+    fetchLeads();
   }, []);
 
-  // Save leads whenever they change
-  useEffect(() => {
-    localStorage.setItem('leads', JSON.stringify(leads));
-  }, [leads]);
+  // Helper function to create filter functions based on stored criteria
+  const createFilterFunction = (filterType, filterValue) => {
+    switch (filterType) {
+      case 'interestLevel':
+        return (lead) => lead.interestLevel === filterValue;
+      case 'contactStatus':
+        return (lead) => lead.contactStatus === filterValue;
+      case 'industry':
+        return (lead) => lead.industry === filterValue;
+      case 'hasWebsite':
+        return (lead) => lead.hasWebsite === filterValue;
+      default:
+        return () => true;
+    }
+  };
 
-  // Save custom lists whenever they change
+  // Fetch custom lists from Firebase on component mount
   useEffect(() => {
-    localStorage.setItem('customLists', JSON.stringify(customLists));
-  }, [customLists]);
+    const fetchCustomLists = async () => {
+      try {
+        const listData = await listService.getLists();
+
+        if (listData.length === 0) {
+          // If no lists exist, create default lists
+          const defaultLists = [
+            {
+              name: 'Hot Leads',
+              filterType: 'interestLevel',
+              filterValue: 'Hot',
+            },
+            {
+              name: 'Almost Converted',
+              filterType: 'interestLevel',
+              filterValue: 'Hot',
+            },
+            {
+              name: 'Converted Clients',
+              filterType: 'interestLevel',
+              filterValue: 'Converted',
+            },
+            {
+              name: 'Need Follow Up',
+              filterType: 'contactStatus',
+              filterValue: 'In Discussion',
+            },
+            {
+              name: 'No Response',
+              filterType: 'contactStatus',
+              filterValue: 'Proposal Sent',
+            },
+            {
+              name: 'Not Contacted',
+              filterType: 'contactStatus',
+              filterValue: 'Initial Outreach',
+            },
+            {
+              name: 'No Website',
+              filterType: 'hasWebsite',
+              filterValue: false,
+            },
+          ];
+
+          // Add each default list to Firebase
+          const savedLists = await Promise.all(
+            defaultLists.map((list) => listService.addList(list))
+          );
+
+          // Transform saved lists to include filter functions
+          const listsWithFilters = savedLists.map((list) => ({
+            ...list,
+            filter: createFilterFunction(list.filterType, list.filterValue),
+          }));
+
+          setCustomLists(listsWithFilters);
+        } else {
+          // Transform fetched lists to include filter functions
+          const listsWithFilters = listData.map((list) => ({
+            ...list,
+            filter: createFilterFunction(list.filterType, list.filterValue),
+          }));
+
+          setCustomLists(listsWithFilters);
+        }
+      } catch (error) {
+        console.error('Error fetching custom lists:', error);
+      }
+    };
+
+    fetchCustomLists();
+  }, []);
 
   // -------------------- EVENT HANDLERS & LOGIC FUNCTIONS --------------------
   // Functions that handle user interactions and data manipulation
@@ -552,59 +613,96 @@ const App = () => {
     setSidebarVisible(!sidebarVisible);
   };
 
-  const toggleContactMethod = (id, method) => {
-    const updatedLeads = leads.map((lead) => {
-      if (lead.id === id) {
-        const methods = [...lead.contactMethods];
+  // Toggle contact method with Firebase
+  const toggleContactMethod = async (id, method) => {
+    try {
+      const leadToUpdate = leads.find((lead) => lead.id === id);
+
+      if (leadToUpdate) {
+        const methods = [...leadToUpdate.contactMethods];
+        let newMethods;
+        let lastContactDate = leadToUpdate.lastContactDate;
 
         // If method already exists, remove it (toggle off)
         if (methods.includes(method)) {
-          return {
-            ...lead,
-            contactMethods: methods.filter((m) => m !== method),
-          };
+          newMethods = methods.filter((m) => m !== method);
+        } else {
+          // Otherwise, add it (toggle on)
+          newMethods = [...methods, method];
+          lastContactDate = getTodayFormatted(); // Update to today's date
         }
-        // Otherwise, add it (toggle on)
-        else {
-          methods.push(method);
-          return {
-            ...lead,
-            contactMethods: methods,
-            lastContactDate: getTodayFormatted(), // Update to today's date in MM/DD/YY format
-          };
-        }
+
+        await leadService.updateLead(id, {
+          contactMethods: newMethods,
+          lastContactDate,
+        });
+
+        const updatedLeads = leads.map((lead) => {
+          if (lead.id === id) {
+            return {
+              ...lead,
+              contactMethods: newMethods,
+              lastContactDate,
+            };
+          }
+          return lead;
+        });
+
+        setLeads(updatedLeads);
       }
-      return lead;
-    });
-    setLeads(updatedLeads);
+    } catch (error) {
+      console.error('Error updating contact methods:', error);
+    }
   };
 
   // Update interest level
-  const updateInterestLevel = (id, level) => {
-    const updatedLeads = leads.map((lead) => {
-      if (lead.id === id) {
-        return {
-          ...lead,
-          interestLevel: level,
-        };
+  // Update interest level with Firebase
+  const updateInterestLevel = async (id, level) => {
+    try {
+      const leadToUpdate = leads.find((lead) => lead.id === id);
+      if (leadToUpdate) {
+        await leadService.updateLead(id, { interestLevel: level });
+
+        const updatedLeads = leads.map((lead) => {
+          if (lead.id === id) {
+            return {
+              ...lead,
+              interestLevel: level,
+            };
+          }
+          return lead;
+        });
+
+        setLeads(updatedLeads);
       }
-      return lead;
-    });
-    setLeads(updatedLeads);
+    } catch (error) {
+      console.error('Error updating interest level:', error);
+    }
   };
 
   // Update contact status
-  const updateContactStatus = (id, status) => {
-    const updatedLeads = leads.map((lead) => {
-      if (lead.id === id) {
-        return {
-          ...lead,
-          contactStatus: status,
-        };
+  // Update contact status with Firebase
+  const updateContactStatus = async (id, status) => {
+    try {
+      const leadToUpdate = leads.find((lead) => lead.id === id);
+      if (leadToUpdate) {
+        await leadService.updateLead(id, { contactStatus: status });
+
+        const updatedLeads = leads.map((lead) => {
+          if (lead.id === id) {
+            return {
+              ...lead,
+              contactStatus: status,
+            };
+          }
+          return lead;
+        });
+
+        setLeads(updatedLeads);
       }
-      return lead;
-    });
-    setLeads(updatedLeads);
+    } catch (error) {
+      console.error('Error updating contact status:', error);
+    }
   };
 
   // Count leads in list
@@ -629,38 +727,41 @@ const App = () => {
     return leads.filter((lead) => lead.industry === industry).length;
   };
 
-  // Add a new lead
-  const handleAddLead = () => {
-    const newLeadWithId = {
-      ...newLead,
-      id: leads.length > 0 ? Math.max(...leads.map((lead) => lead.id)) + 1 : 1,
-      hasWebsite: !!newLead.website,
-      // No need to convert date format as we're already storing in MM/DD/YY
-    };
+  // Handle add lead with Firebase
+  const handleAddLead = async () => {
+    try {
+      const newLeadWithId = {
+        ...newLead,
+        hasWebsite: !!newLead.website,
+      };
 
-    setLeads([...leads, newLeadWithId]);
-    setShowNewLeadForm(false);
-    setNewLead({
-      businessName: '',
-      contactPerson: '',
-      phone: '',
-      email: '',
-      website: '',
-      socials: {
-        facebook: '',
-        instagram: '',
-        linkedin: '',
-        gbp: '',
-      },
-      hasWebsite: false,
-      interestLevel: 'Cold',
-      industry: '',
-      lastContactDate: getTodayFormatted(),
-      contactStatus: 'Not Contacted',
-      contactMethods: [],
-      notes: [],
-    });
-    setCurrentNote('');
+      const savedLead = await leadService.addLead(newLeadWithId);
+      setLeads([...leads, savedLead]);
+      setShowNewLeadForm(false);
+      setNewLead({
+        businessName: '',
+        contactPerson: '',
+        phone: '',
+        email: '',
+        website: '',
+        socials: {
+          facebook: '',
+          instagram: '',
+          linkedin: '',
+          gbp: '',
+        },
+        hasWebsite: false,
+        interestLevel: 'Cold',
+        industry: '',
+        lastContactDate: getTodayFormatted(),
+        contactStatus: 'Initial Outreach',
+        contactMethods: [],
+        notes: [],
+      });
+      setCurrentNote('');
+    } catch (error) {
+      console.error('Error adding lead:', error);
+    }
   };
 
   // Handle input changes for new lead form
@@ -834,36 +935,57 @@ const App = () => {
   };
 
   // Add a new custom list
-  const handleAddList = () => {
-    let newFilter;
+  // Add a custom list with Firebase
+  const handleAddList = async () => {
+    try {
+      let filterType = newListType;
+      let filterValue = newListValue;
 
-    if (newListType === 'interestLevel') {
-      newFilter = (lead) => lead.interestLevel === newListValue;
-    } else if (newListType === 'contactStatus') {
-      newFilter = (lead) => lead.contactStatus === newListValue;
-    } else if (newListType === 'industry') {
-      newFilter = (lead) => lead.industry === newListValue;
-    } else if (newListType === 'hasWebsite') {
-      newFilter = (lead) => lead.hasWebsite === (newListValue === 'true');
+      // For hasWebsite, convert string to boolean
+      if (newListType === 'hasWebsite') {
+        filterValue = newListValue === 'true';
+      }
+
+      const newCustomList = {
+        name: newListName,
+        filterType,
+        filterValue,
+      };
+
+      const savedList = await listService.addList(newCustomList);
+
+      // Add the filter function
+      const listWithFilter = {
+        ...savedList,
+        filter: createFilterFunction(filterType, filterValue),
+      };
+
+      setCustomLists([...customLists, listWithFilter]);
+      setShowNewListForm(false);
+      setNewListName('');
+      setNewListType('interestLevel');
+      setNewListValue('Cold');
+    } catch (error) {
+      console.error('Error adding list:', error);
     }
-
-    const newCustomList = {
-      name: newListName,
-      filter: newFilter,
-    };
-
-    setCustomLists([...customLists, newCustomList]);
-    setShowNewListForm(false);
-    setNewListName('');
-    setNewListType('interestLevel');
-    setNewListValue('Cold');
   };
 
   // Delete a custom list
-  const deleteCustomList = (listName) => {
-    setCustomLists(customLists.filter((list) => list.name !== listName));
-    if (selectedList === listName) {
-      setSelectedList('All Leads');
+  // Delete a custom list with Firebase
+  const deleteCustomList = async (listName) => {
+    try {
+      const listToDelete = customLists.find((list) => list.name === listName);
+
+      if (listToDelete) {
+        await listService.deleteList(listToDelete.id);
+        setCustomLists(customLists.filter((list) => list.name !== listName));
+
+        if (selectedList === listName) {
+          setSelectedList('All Leads');
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting list:', error);
     }
   };
 
@@ -916,31 +1038,49 @@ const App = () => {
   };
 
   // Save the edited lead
-  const handleSaveEditedLead = () => {
-    const updatedLeads = leads.map((lead) =>
-      lead.id === editingLead.id
-        ? { ...editingLead, hasWebsite: !!editingLead.website }
-        : lead
-    );
+  // Handle save edited lead with Firebase
+  const handleSaveEditedLead = async () => {
+    try {
+      const updatedLead = {
+        ...editingLead,
+        hasWebsite: !!editingLead.website,
+      };
 
-    setLeads(updatedLeads);
-    setShowEditLeadForm(false);
-    setEditingLead(null);
+      // Remove the id from the document to update (Firebase doesn't want the id in the document data)
+      const { id, ...leadData } = updatedLead;
+
+      await leadService.updateLead(id, leadData);
+
+      const updatedLeads = leads.map((lead) =>
+        lead.id === id ? updatedLead : lead
+      );
+
+      setLeads(updatedLeads);
+      setShowEditLeadForm(false);
+      setEditingLead(null);
+    } catch (error) {
+      console.error('Error updating lead:', error);
+    }
   };
 
   // Delete a lead
-  const handleDeleteLead = (id) => {
+  // Handle delete lead with Firebase
+  const handleDeleteLead = async (id) => {
     // Ask for confirmation before deleting
     if (
       window.confirm(
         'Are you sure you want to delete this lead? This action cannot be undone.'
       )
     ) {
-      // Filter out the lead with the matching id
-      const updatedLeads = leads.filter((lead) => lead.id !== id);
-      setLeads(updatedLeads);
-      setShowEditLeadForm(false);
-      setEditingLead(null);
+      try {
+        await leadService.deleteLead(id);
+        const updatedLeads = leads.filter((lead) => lead.id !== id);
+        setLeads(updatedLeads);
+        setShowEditLeadForm(false);
+        setEditingLead(null);
+      } catch (error) {
+        console.error('Error deleting lead:', error);
+      }
     }
   };
 
