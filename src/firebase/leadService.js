@@ -1,5 +1,5 @@
 // src/firebase/leadService.js
-import { db } from './config';
+import { db } from './firebase';
 import {
   collection,
   addDoc,

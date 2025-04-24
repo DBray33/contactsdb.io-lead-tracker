@@ -14,9 +14,14 @@ import {
   MapPin,
   Edit,
   ChevronDown,
+  LogOut, // Add LogOut icon for sign out button
 } from 'lucide-react';
 import './App.css';
 import { leadService, listService } from './firebase/leadService';
+import { authService } from './firebase/authService';
+import Auth from './components/Auth'; // Import Auth component
+import './Auth.css'; // Import Auth styles
+import Settings from './components/Settings';
 
 // -------------------- UTILITY FUNCTIONS --------------------
 // Helper functions defined outside the component
@@ -321,6 +326,10 @@ const initialLeads = [
   },
 ];
 
+// Add this for Step 1: App Configuration - as a regular object instead of useState
+const DEFAULT_APP_CONFIG = {
+  requireAuth: true, // Set to false to bypass authentication
+};
 // -------------------- COMPONENT DEFINITION --------------------
 // Lead tracking app component
 const App = () => {
@@ -456,6 +465,11 @@ const App = () => {
   // -------------------- STATE DECLARATIONS --------------------
   // All useState hooks to manage component state
 
+  // Authentication state - added for Step 2
+  const [appConfig, setAppConfig] = useState(DEFAULT_APP_CONFIG);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
   // === DATA STATE ===
   // Primary data and filtering state
   const [leads, setLeads] = useState([]); // All leads from Firebase
@@ -529,6 +543,47 @@ const App = () => {
 
   // -------------------- EFFECT HOOKS --------------------
   // useEffect hooks for side effects
+
+  // Listen for authentication state changes - add this for Step 3
+  useEffect(() => {
+    if (appConfig.requireAuth) {
+      const unsubscribe = authService.onAuthStateChanged((user) => {
+        setUser(user);
+        setAuthLoading(false);
+      });
+
+      return () => unsubscribe(); // Cleanup subscription on unmount
+    } else {
+      // If auth is not required, set a default user
+      setUser({
+        email: 'demo@example.com',
+        displayName: 'Demo User',
+        uid: 'demo-user',
+      });
+      setAuthLoading(false);
+    }
+  }, [appConfig.requireAuth]);
+
+  // Only fetch data when user is authenticated - add this for Step 3
+  useEffect(() => {
+    if (user) {
+      const fetchLeads = async () => {
+        try {
+          setLoading(true);
+          const leadData = await leadService.getLeads();
+          setLeads(leadData);
+          setFilteredLeads(leadData);
+          setLoading(false);
+        } catch (error) {
+          console.error('Error fetching leads:', error);
+          setLoading(false);
+        }
+      };
+
+      fetchLeads();
+    }
+  }, [user]);
+
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
@@ -633,23 +688,76 @@ const App = () => {
     };
   }, [expandedRows]);
 
-  // Fetch leads from Firebase on component mount
+  // Fetch custom lists from Firebase on component mount - modified for Step 3
   useEffect(() => {
-    const fetchLeads = async () => {
-      try {
-        setLoading(true);
-        const leadData = await leadService.getLeads();
-        setLeads(leadData);
-        setFilteredLeads(leadData);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching leads:', error);
-        setLoading(false);
-      }
-    };
+    if (user) {
+      const fetchCustomLists = async () => {
+        try {
+          // Get all existing lists
+          const listData = await listService.getLists();
 
-    fetchLeads();
-  }, []);
+          let listsToUse = listData;
+
+          // If there are no lists at all, create the default ones
+          if (listData.length === 0) {
+            // Define the default lists
+            const defaultListsConfig = [
+              {
+                name: 'Cold Leads',
+                filterType: 'interestLevel',
+                filterValue: 'Cold',
+              },
+              {
+                name: 'Warm Leads',
+                filterType: 'interestLevel',
+                filterValue: 'Warm',
+              },
+              {
+                name: 'Hot Leads',
+                filterType: 'interestLevel',
+                filterValue: 'Hot',
+              },
+              {
+                name: 'Converted Leads',
+                filterType: 'interestLevel',
+                filterValue: 'Converted',
+              },
+              {
+                name: 'Inactive Leads',
+                filterType: 'interestLevel',
+                filterValue: 'Inactive',
+              },
+            ];
+
+            // Create the new lists
+            const savedLists = await Promise.all(
+              defaultListsConfig.map((list) => listService.addList(list))
+            );
+
+            listsToUse = savedLists;
+          }
+
+          // Transform lists to include filter functions
+          const listsWithFilters = listsToUse.map((list) => ({
+            ...list,
+            filter: createFilterFunction(
+              list.filterType,
+              list.filterValue,
+              list.filterValues || [],
+              list.excludeInterestLevels || [],
+              list.excludeContactStatuses || []
+            ),
+          }));
+
+          setCustomLists(listsWithFilters);
+        } catch (error) {
+          console.error('Error fetching custom lists:', error);
+        }
+      };
+
+      fetchCustomLists();
+    }
+  }, [user]);
 
   // Helper function to create filter functions based on stored criteria
   const createFilterFunction = (
@@ -720,77 +828,23 @@ const App = () => {
     };
   };
 
-  // Fetch custom lists from Firebase on component mount
-  useEffect(() => {
-    const fetchCustomLists = async () => {
-      try {
-        // Get all existing lists
-        const listData = await listService.getLists();
-
-        let listsToUse = listData;
-
-        // If there are no lists at all, create the default ones
-        if (listData.length === 0) {
-          // Define the default lists
-          const defaultListsConfig = [
-            {
-              name: 'Cold Leads',
-              filterType: 'interestLevel',
-              filterValue: 'Cold',
-            },
-            {
-              name: 'Warm Leads',
-              filterType: 'interestLevel',
-              filterValue: 'Warm',
-            },
-            {
-              name: 'Hot Leads',
-              filterType: 'interestLevel',
-              filterValue: 'Hot',
-            },
-            {
-              name: 'Converted Leads',
-              filterType: 'interestLevel',
-              filterValue: 'Converted',
-            },
-            {
-              name: 'Inactive Leads',
-              filterType: 'interestLevel',
-              filterValue: 'Inactive',
-            },
-          ];
-
-          // Create the new lists
-          const savedLists = await Promise.all(
-            defaultListsConfig.map((list) => listService.addList(list))
-          );
-
-          listsToUse = savedLists;
-        }
-
-        // Transform lists to include filter functions
-        const listsWithFilters = listsToUse.map((list) => ({
-          ...list,
-          filter: createFilterFunction(
-            list.filterType,
-            list.filterValue,
-            list.filterValues || [],
-            list.excludeInterestLevels || [],
-            list.excludeContactStatuses || []
-          ),
-        }));
-
-        setCustomLists(listsWithFilters);
-      } catch (error) {
-        console.error('Error fetching custom lists:', error);
-      }
-    };
-
-    fetchCustomLists();
-  }, []);
-
   // -------------------- EVENT HANDLERS & LOGIC FUNCTIONS --------------------
   // Functions that handle user interactions and data manipulation
+
+  // Handle successful authentication - add this for Step 4
+  const handleAuthSuccess = (user) => {
+    setUser(user);
+  };
+
+  // Handle sign out - add this for Step 4
+  const handleSignOut = async () => {
+    try {
+      await authService.signOut();
+      // Auth state change listener will update user state
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
   // Request sort
   const requestSort = (key) => {
     let direction = 'ascending';
@@ -1355,6 +1409,23 @@ const App = () => {
   const industries = ['All', ...getUniqueIndustries(leads)];
 
   // -------------------- JSX/RENDER SECTION --------------------
+  // Show loading screen while checking authentication
+  if (authLoading) {
+    return (
+      <div className="app-container">
+        <div className="loading-screen">
+          <div className="loading-spinner"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show authentication screen if user is not logged in and auth is required
+  if (appConfig.requireAuth && !user) {
+    return <Auth onAuthSuccess={handleAuthSuccess} />;
+  }
+
   return (
     <div className="app-container">
       {/* Sidebar */}
@@ -1430,6 +1501,32 @@ const App = () => {
                 </li>
               ))}
             </ul>
+          </div>
+
+          {/* Settings section */}
+          <div className="sidebar-section">
+            <div className="section-header">
+              <h3 className="section-title">Settings</h3>
+            </div>
+            <Settings appConfig={appConfig} setAppConfig={setAppConfig} />
+          </div>
+
+          {/* User account section */}
+          <div className="sidebar-section">
+            <div className="section-header">
+              <h3 className="section-title">Account</h3>
+            </div>
+            <div className="user-info">
+              <p>{user.email}</p>
+              {user.displayName && (
+                <p className="display-name">{user.displayName}</p>
+              )}
+              {appConfig.requireAuth && (
+                <button className="logout-button" onClick={handleSignOut}>
+                  <LogOut size={16} /> Sign Out
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
