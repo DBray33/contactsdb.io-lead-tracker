@@ -328,7 +328,7 @@ const initialLeads = [
 
 // Add this for Step 1: App Configuration - as a regular object instead of useState
 const DEFAULT_APP_CONFIG = {
-  requireAuth: true, // Set to false to bypass authentication
+  requireAuth: false, // Set to false to bypass authentication
 };
 // -------------------- COMPONENT DEFINITION --------------------
 // Lead tracking app component
