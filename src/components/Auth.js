@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { authService } from '../firebase/authService';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import './Auth.css'; // Make sure to import your CSS file
 
-// Authentication component
-const Auth = ({ onAuthSuccess }) => {
+const Auth = () => {
   const [mode, setMode] = useState('signin'); // signin, register, reset
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,6 +13,9 @@ const Auth = ({ onAuthSuccess }) => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const { login, signup, resetPassword } = useAuth();
+  const navigate = useNavigate();
+
   // Handle sign in submit
   const handleSignInSubmit = async (e) => {
     e.preventDefault();
@@ -19,15 +23,8 @@ const Auth = ({ onAuthSuccess }) => {
     setLoading(true);
 
     try {
-      // Sign in with email and password
-      const result = await authService.signInWithEmail(email, password);
-
-      if (result.success) {
-        // If sign in is successful, call the onAuthSuccess callback
-        onAuthSuccess(result.user);
-      } else {
-        setError('Invalid email or password. Please try again.');
-      }
+      await login(email, password);
+      navigate('/'); // Redirect to home page after successful login
     } catch (err) {
       console.error('Sign in error:', err);
       setError('Error signing in. Please try again.');
@@ -50,30 +47,19 @@ const Auth = ({ onAuthSuccess }) => {
     }
 
     try {
-      // Register user with email and password
-      const result = await authService.registerUser(
-        email,
-        password,
-        displayName
-      );
-
-      if (result.success) {
-        // If registration is successful, call the onAuthSuccess callback
-        onAuthSuccess(result.user);
-      } else {
-        if (result.error.code === 'auth/email-already-in-use') {
-          setError(
-            'This email is already registered. Please try signing in instead.'
-          );
-        } else if (result.error.code === 'auth/weak-password') {
-          setError('Password is too weak. Please use at least 6 characters.');
-        } else {
-          setError('Error registering. Please try again.');
-        }
-      }
+      await signup(email, password);
+      navigate('/'); // Redirect to home after registration
     } catch (err) {
       console.error('Registration error:', err);
-      setError('Error registering. Please try again.');
+      if (err.code === 'auth/email-already-in-use') {
+        setError(
+          'This email is already registered. Please try signing in instead.'
+        );
+      } else if (err.code === 'auth/weak-password') {
+        setError('Password is too weak. Please use at least 6 characters.');
+      } else {
+        setError('Error registering. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -87,15 +73,8 @@ const Auth = ({ onAuthSuccess }) => {
     setLoading(true);
 
     try {
-      // Send password reset email
-      const result = await authService.resetPassword(email);
-
-      if (result.success) {
-        setSuccess('Password reset email sent. Please check your inbox.');
-        // Keep the user on the reset password page after showing success message
-      } else {
-        setError('Error sending password reset email. Please try again.');
-      }
+      await resetPassword(email);
+      setSuccess('Password reset email sent. Please check your inbox.');
     } catch (err) {
       console.error('Password reset error:', err);
       setError('Error sending password reset email. Please try again.');
@@ -145,7 +124,7 @@ const Auth = ({ onAuthSuccess }) => {
               />
             </div>
 
-            <button type="submit" className="submit-button" disabled={loading}>
+            <button type="submit" className="auth-button" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
 
@@ -217,7 +196,7 @@ const Auth = ({ onAuthSuccess }) => {
               />
             </div>
 
-            <button type="submit" className="submit-button" disabled={loading}>
+            <button type="submit" className="auth-button" disabled={loading}>
               {loading ? 'Registering...' : 'Register'}
             </button>
 
@@ -247,7 +226,7 @@ const Auth = ({ onAuthSuccess }) => {
               <small>Enter the email associated with your account</small>
             </div>
 
-            <button type="submit" className="submit-button" disabled={loading}>
+            <button type="submit" className="auth-button" disabled={loading}>
               {loading ? 'Sending...' : 'Reset Password'}
             </button>
 

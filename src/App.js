@@ -1,5 +1,5 @@
 // -------------------- IMPORTS --------------------
-// This section imports libraries, components, and files needed for this component
+// Libraries and components
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -14,14 +14,20 @@ import {
   MapPin,
   Edit,
   ChevronDown,
-  LogOut, // Add LogOut icon for sign out button
+  LogOut,
 } from 'lucide-react';
+
+// Styles
 import './App.css';
+
+// Services
 import { leadService, listService } from './firebase/leadService';
-import { authService } from './firebase/authService';
-import Auth from './components/Auth'; // Import Auth component
-import './Auth.css'; // Import Auth styles
+
+// Components
 import Settings from './components/Settings';
+
+// Authentication context
+import { useAuth } from './contexts/AuthContext';
 
 // -------------------- UTILITY FUNCTIONS --------------------
 // Helper functions defined outside the component
@@ -333,6 +339,86 @@ const DEFAULT_APP_CONFIG = {
 // -------------------- COMPONENT DEFINITION --------------------
 // Lead tracking app component
 const App = () => {
+  // -------------------- STATE DECLARATIONS --------------------
+  // Add authentication-related functionality
+  const { currentUser, logout } = useAuth();
+
+  // Authentication state - added for Step 2
+  const [appConfig, setAppConfig] = useState(DEFAULT_APP_CONFIG);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // === DATA STATE ===
+  // Primary data and filtering state
+  const [leads, setLeads] = useState([]); // All leads from Firebase
+  const [filteredLeads, setFilteredLeads] = useState([]); // Leads after filtering
+  const [loading, setLoading] = useState(true); // Loading state indicator
+
+  // Sorting and filtering controls
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'ascending',
+  });
+  const [selectedIndustry, setSelectedIndustry] = useState('All');
+  const [customLists, setCustomLists] = useState([]);
+  const [selectedList, setSelectedList] = useState('All Leads');
+
+  // === UI STATE ===
+  // Layout and display state
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [expandedRows, setExpandedRows] = useState({}); // Track expanded lead rows
+  const [animatingRows, setAnimatingRows] = useState({}); // Animation state for rows
+
+  // === FORM STATE ===
+  // New lead form state
+  const [showNewLeadForm, setShowNewLeadForm] = useState(false);
+  const [newLead, setNewLead] = useState({
+    businessName: '',
+    contactPerson: '',
+    phone: '',
+    email: '',
+    website: '',
+    socials: {
+      facebook: '',
+      instagram: '',
+      linkedin: '',
+      gbp: '',
+    },
+    hasWebsite: false,
+    interestLevel: 'Cold',
+    industry: '',
+    lastContactDate: getTodayFormatted(),
+    contactStatus: 'Not Contacted',
+    contactMethods: [],
+    notes: [],
+  });
+  const [currentNote, setCurrentNote] = useState(''); // For composing new notes
+
+  // Edit lead form state
+  const [showEditLeadForm, setShowEditLeadForm] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
+  const [editingCurrentNote, setEditingCurrentNote] = useState('');
+
+  // New industry form state
+  const [showNewIndustryForm, setShowNewIndustryForm] = useState(false);
+  const [newIndustry, setNewIndustry] = useState('');
+
+  // === CUSTOM LIST FORM STATE ===
+  // Basic list form state
+  const [showNewListForm, setShowNewListForm] = useState(false);
+  const [newListName, setNewListName] = useState('');
+  const [newListType, setNewListType] = useState('interestLevel');
+  const [newListValue, setNewListValue] = useState('Cold');
+
+  // Multi-value list state
+  const [newListValues, setNewListValues] = useState([]); // For multiple values (industry)
+  const [tempValue, setTempValue] = useState(''); // Temporary input value
+
+  // Multi-criteria exclusion state
+  const [selectedInterestLevels, setSelectedInterestLevels] = useState([]); // Interest levels to exclude
+  const [selectedContactStatuses, setSelectedContactStatuses] = useState([]); // Contact statuses to exclude
+
   // Function to render multi-criteria form fields
   const renderMultiCriteriaForm = () => (
     <>
@@ -462,97 +548,25 @@ const App = () => {
     </>
   );
 
-  // -------------------- STATE DECLARATIONS --------------------
-  // All useState hooks to manage component state
-
-  // Authentication state - added for Step 2
-  const [appConfig, setAppConfig] = useState(DEFAULT_APP_CONFIG);
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
-  // === DATA STATE ===
-  // Primary data and filtering state
-  const [leads, setLeads] = useState([]); // All leads from Firebase
-  const [filteredLeads, setFilteredLeads] = useState([]); // Leads after filtering
-  const [loading, setLoading] = useState(true); // Loading state indicator
-
-  // Sorting and filtering controls
-  const [sortConfig, setSortConfig] = useState({
-    key: null,
-    direction: 'ascending',
-  });
-  const [selectedIndustry, setSelectedIndustry] = useState('All');
-  const [customLists, setCustomLists] = useState([]);
-  const [selectedList, setSelectedList] = useState('All Leads');
-
-  // === UI STATE ===
-  // Layout and display state
-  const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [expandedRows, setExpandedRows] = useState({}); // Track expanded lead rows
-  const [animatingRows, setAnimatingRows] = useState({}); // Animation state for rows
-
-  // === FORM STATE ===
-  // New lead form state
-  const [showNewLeadForm, setShowNewLeadForm] = useState(false);
-  const [newLead, setNewLead] = useState({
-    businessName: '',
-    contactPerson: '',
-    phone: '',
-    email: '',
-    website: '',
-    socials: {
-      facebook: '',
-      instagram: '',
-      linkedin: '',
-      gbp: '',
-    },
-    hasWebsite: false,
-    interestLevel: 'Cold',
-    industry: '',
-    lastContactDate: getTodayFormatted(),
-    contactStatus: 'Not Contacted',
-    contactMethods: [],
-    notes: [],
-  });
-  const [currentNote, setCurrentNote] = useState(''); // For composing new notes
-
-  // Edit lead form state
-  const [showEditLeadForm, setShowEditLeadForm] = useState(false);
-  const [editingLead, setEditingLead] = useState(null);
-  const [editingCurrentNote, setEditingCurrentNote] = useState('');
-
-  // New industry form state
-  const [showNewIndustryForm, setShowNewIndustryForm] = useState(false);
-  const [newIndustry, setNewIndustry] = useState('');
-
-  // === CUSTOM LIST FORM STATE ===
-  // Basic list form state
-  const [showNewListForm, setShowNewListForm] = useState(false);
-  const [newListName, setNewListName] = useState('');
-  const [newListType, setNewListType] = useState('interestLevel');
-  const [newListValue, setNewListValue] = useState('Cold');
-
-  // Multi-value list state
-  const [newListValues, setNewListValues] = useState([]); // For multiple values (industry)
-  const [tempValue, setTempValue] = useState(''); // Temporary input value
-
-  // Multi-criteria exclusion state
-  const [selectedInterestLevels, setSelectedInterestLevels] = useState([]); // Interest levels to exclude
-  const [selectedContactStatuses, setSelectedContactStatuses] = useState([]); // Contact statuses to exclude
-
+  // Handle logout function
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // PrivateRoute will handle redirection
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
   // -------------------- EFFECT HOOKS --------------------
   // useEffect hooks for side effects
 
   // Listen for authentication state changes - add this for Step 3
   useEffect(() => {
     if (appConfig.requireAuth) {
-      const unsubscribe = authService.onAuthStateChanged((user) => {
-        setUser(user);
-        setAuthLoading(false);
-      });
-
-      return () => unsubscribe(); // Cleanup subscription on unmount
+      // Authentication state is now handled by the context
+      // Just update local state based on currentUser from context
+      setUser(currentUser);
+      setAuthLoading(false);
     } else {
       // If auth is not required, set a default user
       setUser({
@@ -562,15 +576,16 @@ const App = () => {
       });
       setAuthLoading(false);
     }
-  }, [appConfig.requireAuth]);
+  }, [appConfig.requireAuth, currentUser]);
 
   // Only fetch data when user is authenticated - add this for Step 3
   useEffect(() => {
-    if (user) {
+    if (user && currentUser) {
       const fetchLeads = async () => {
         try {
           setLoading(true);
-          const leadData = await leadService.getLeads();
+          // Use the current user's ID to fetch only their leads
+          const leadData = await leadService.getLeadsByUser(currentUser.uid);
           setLeads(leadData);
           setFilteredLeads(leadData);
           setLoading(false);
@@ -582,7 +597,7 @@ const App = () => {
 
       fetchLeads();
     }
-  }, [user]);
+  }, [user, currentUser]); // Add currentUser to dependencies
 
   // Handle window resize
   useEffect(() => {
@@ -690,42 +705,47 @@ const App = () => {
 
   // Fetch custom lists from Firebase on component mount - modified for Step 3
   useEffect(() => {
-    if (user) {
+    if (user && currentUser) {
       const fetchCustomLists = async () => {
         try {
-          // Get all existing lists
-          const listData = await listService.getLists();
+          // Get lists for the current user
+          const listData = await listService.getListsByUser(currentUser.uid);
 
           let listsToUse = listData;
 
           // If there are no lists at all, create the default ones
           if (listData.length === 0) {
-            // Define the default lists
+            // Define the default lists with userId
             const defaultListsConfig = [
               {
                 name: 'Cold Leads',
                 filterType: 'interestLevel',
                 filterValue: 'Cold',
+                userId: currentUser.uid,
               },
               {
                 name: 'Warm Leads',
                 filterType: 'interestLevel',
                 filterValue: 'Warm',
+                userId: currentUser.uid,
               },
               {
                 name: 'Hot Leads',
                 filterType: 'interestLevel',
                 filterValue: 'Hot',
+                userId: currentUser.uid,
               },
               {
                 name: 'Converted Leads',
                 filterType: 'interestLevel',
                 filterValue: 'Converted',
+                userId: currentUser.uid,
               },
               {
                 name: 'Inactive Leads',
                 filterType: 'interestLevel',
                 filterValue: 'Inactive',
+                userId: currentUser.uid,
               },
             ];
 
@@ -757,7 +777,7 @@ const App = () => {
 
       fetchCustomLists();
     }
-  }, [user]);
+  }, [user, currentUser]); // Add currentUser to dependencies
 
   // Helper function to create filter functions based on stored criteria
   const createFilterFunction = (
@@ -827,7 +847,6 @@ const App = () => {
       return true;
     };
   };
-
   // -------------------- EVENT HANDLERS & LOGIC FUNCTIONS --------------------
   // Functions that handle user interactions and data manipulation
 
@@ -839,7 +858,7 @@ const App = () => {
   // Handle sign out - add this for Step 4
   const handleSignOut = async () => {
     try {
-      await authService.signOut();
+      await logout(); // Use logout from useAuth context
       // Auth state change listener will update user state
     } catch (error) {
       console.error('Error signing out:', error);
@@ -979,6 +998,7 @@ const App = () => {
       const newLeadWithId = {
         ...newLead,
         hasWebsite: !!newLead.website,
+        userId: currentUser.uid, // Add the user ID
       };
 
       const savedLead = await leadService.addLead(newLeadWithId);
@@ -1208,6 +1228,7 @@ const App = () => {
           : [],
         excludeInterestLevels: selectedInterestLevels,
         excludeContactStatuses: selectedContactStatuses,
+        userId: currentUser.uid, // Add user ID here
       };
 
       const savedList = await listService.addList(newCustomList);
@@ -1421,11 +1442,6 @@ const App = () => {
     );
   }
 
-  // Show authentication screen if user is not logged in and auth is required
-  if (appConfig.requireAuth && !user) {
-    return <Auth onAuthSuccess={handleAuthSuccess} />;
-  }
-
   return (
     <div className="app-container">
       {/* Sidebar */}
@@ -1517,11 +1533,11 @@ const App = () => {
               <h3 className="section-title">Account</h3>
             </div>
             <div className="user-info">
-              <p>{user.email}</p>
-              {user.displayName && (
-                <p className="display-name">{user.displayName}</p>
+              <p>{currentUser ? currentUser.email : 'Guest'}</p>
+              {currentUser && currentUser.displayName && (
+                <p className="display-name">{currentUser.displayName}</p>
               )}
-              {appConfig.requireAuth && (
+              {appConfig.requireAuth && currentUser && (
                 <button className="logout-button" onClick={handleSignOut}>
                   <LogOut size={16} /> Sign Out
                 </button>
@@ -1539,6 +1555,14 @@ const App = () => {
             {sidebarVisible ? <X size={24} /> : <Menu size={24} />}
           </button>
           <h1 className="app-title">Lead Tracker</h1>
+
+          {/* Email verification message */}
+          {currentUser && !currentUser.emailVerified && (
+            <div className="verification-message">
+              Please verify your email to access all features.
+            </div>
+          )}
+
           <button
             className="add-lead-button"
             onClick={() => setShowNewLeadForm(true)}>

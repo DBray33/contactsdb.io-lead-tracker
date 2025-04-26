@@ -26,6 +26,16 @@ export const leadService = {
     }));
   },
 
+  // Get leads by user
+  getLeadsByUser: async (userId) => {
+    const q = query(leadsCollection, where('userId', '==', userId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  },
+
   // Add new lead
   addLead: async (lead) => {
     const docRef = await addDoc(leadsCollection, lead);
@@ -68,6 +78,16 @@ export const listService = {
   // Get all custom lists
   getLists: async () => {
     const snapshot = await getDocs(listsCollection);
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  },
+
+  // Get lists by user
+  getListsByUser: async (userId) => {
+    const q = query(listsCollection, where('userId', '==', userId));
+    const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
