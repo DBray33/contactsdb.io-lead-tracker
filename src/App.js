@@ -124,19 +124,19 @@ const getInterestLevelWeight = (interestLevel) => {
 // Helper function to get contact status color
 const getContactStatusColor = (status) => {
   const colors = {
-    'Not Contacted': 'rgb(71, 85, 105)',
-    'Initial Outreach': 'rgb(100, 116, 139)',
-    'Follow Up': 'rgb(168, 85, 247)', // Add this line with purple color
-    'In Discussion': 'rgb(234, 179, 8)',
-    'Proposal Sent': 'rgb(168, 85, 247)',
-    Negotiating: 'rgb(6, 182, 212)',
-    'Under Review': 'rgb(59, 130, 246)',
-    'Contract Sent': 'rgb(22, 101, 216)',
-    'Future Opportunity': 'rgb(249, 115, 22)',
-    Onboarding: 'rgb(16, 185, 129)',
-    Maintenance: 'rgb(5, 150, 105)',
-    Dormant: 'rgb(107, 114, 128)',
-    Lost: 'rgb(220, 38, 38)',
+    'Not Contacted': 'rgb(71, 85, 105)', // Slate gray
+    'Initial Outreach': 'rgb(100, 116, 139)', // Light blue-gray
+    'Follow Up': 'rgb(139, 92, 246)', // Purple
+    'In Discussion': 'rgb(234, 179, 8)', // Yellow
+    'Proposal Sent': 'rgb(217, 70, 239)', // Pink
+    Negotiating: 'rgb(6, 182, 212)', // Cyan
+    'Under Review': 'rgb(59, 130, 246)', // Blue
+    'Contract Sent': 'rgb(37, 99, 235)', // Royal blue
+    'Future Opportunity': 'rgb(251, 146, 60)', // Light orange
+    Onboarding: 'rgb(52, 211, 153)', // Light green
+    Maintenance: 'rgb(22, 163, 74)', // Same green as Converted
+    Dormant: 'rgb(107, 114, 128)', // Gray
+    Lost: 'rgb(220, 38, 38)', // Red
   };
   return colors[status] || 'rgb(71, 85, 105)'; // Default color if not found
 };
@@ -1758,14 +1758,14 @@ const App = () => {
                         style={{
                           backgroundColor:
                             lead.interestLevel === 'Hot'
-                              ? 'rgb(22, 163, 74)'
+                              ? 'rgb(249, 115, 22)' // Orange
                               : lead.interestLevel === 'Warm'
-                              ? 'rgb(234, 179, 8)'
+                              ? 'rgb(234, 179, 8)' // Yellow
                               : lead.interestLevel === 'Cold'
-                              ? 'rgb(59, 130, 246)'
+                              ? 'rgb(59, 130, 246)' // Blue
                               : lead.interestLevel === 'Converted'
-                              ? 'rgb(6, 182, 212)'
-                              : 'rgb(220, 38, 38)',
+                              ? 'rgb(22, 163, 74)' // Green
+                              : 'rgb(30, 64, 175)', // Darker blue for Inactive
                         }}>
                         <option
                           value="Cold"
@@ -1779,17 +1779,17 @@ const App = () => {
                         </option>
                         <option
                           value="Hot"
-                          style={{ backgroundColor: 'rgb(22, 163, 74)' }}>
+                          style={{ backgroundColor: 'rgb(249, 115, 22)' }}>
                           Hot
                         </option>
                         <option
                           value="Converted"
-                          style={{ backgroundColor: 'rgb(6, 182, 212)' }}>
+                          style={{ backgroundColor: 'rgb(22, 163, 74)' }}>
                           Converted
                         </option>
                         <option
                           value="Inactive"
-                          style={{ backgroundColor: 'rgb(220, 38, 38)' }}>
+                          style={{ backgroundColor: 'rgb(30, 64, 175)' }}>
                           Inactive
                         </option>
                       </select>
