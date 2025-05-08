@@ -476,11 +476,11 @@ const App = () => {
           }}
           style={{ marginBottom: '10px' }}>
           <option value="">Select interest level to exclude...</option>
+          <option value="Inactive">Inactive</option>
           <option value="Cold">Cold</option>
           <option value="Warm">Warm</option>
           <option value="Hot">Hot</option>
           <option value="Converted">Converted</option>
-          <option value="Inactive">Inactive</option>
         </select>
 
         <label style={{ marginBottom: '2px', display: 'block' }}>
@@ -1768,6 +1768,11 @@ const App = () => {
                               : 'rgb(30, 64, 175)', // Darker blue for Inactive
                         }}>
                         <option
+                          value="Inactive"
+                          style={{ backgroundColor: 'rgb(30, 64, 175)' }}>
+                          Inactive
+                        </option>
+                        <option
                           value="Cold"
                           style={{ backgroundColor: 'rgb(59, 130, 246)' }}>
                           Cold
@@ -1786,11 +1791,6 @@ const App = () => {
                           value="Converted"
                           style={{ backgroundColor: 'rgb(22, 163, 74)' }}>
                           Converted
-                        </option>
-                        <option
-                          value="Inactive"
-                          style={{ backgroundColor: 'rgb(30, 64, 175)' }}>
-                          Inactive
                         </option>
                       </select>
                     </td>
@@ -2047,11 +2047,11 @@ const App = () => {
                   value={newLead.interestLevel}
                   onChange={handleNewLeadChange}
                   className="form-input">
+                  <option value="Inactive">Inactive</option>
                   <option value="Cold">Cold</option>
                   <option value="Warm">Warm</option>
                   <option value="Hot">Hot</option>
                   <option value="Converted">Converted</option>
-                  <option value="Inactive">Inactive</option>
                 </select>
               </div>
 
@@ -2523,11 +2523,11 @@ const App = () => {
                   value={editingLead.interestLevel}
                   onChange={handleEditLeadChange}
                   className="form-input">
+                  <option value="Inactive">Inactive</option>
                   <option value="Cold">Cold</option>
                   <option value="Warm">Warm</option>
                   <option value="Hot">Hot</option>
                   <option value="Converted">Converted</option>
-                  <option value="Inactive">Inactive</option>
                 </select>
               </div>
 
