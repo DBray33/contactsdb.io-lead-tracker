@@ -1556,7 +1556,99 @@ const App = () => {
           <button className="menu-button" onClick={toggleSidebar}>
             {sidebarVisible ? <X size={24} /> : <Menu size={24} />}
           </button>
-          <h1 className="app-title">Lead Tracker</h1>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 100 100"
+              style={{ height: '40px', marginRight: '12px' }} // Increased size from 32px to 40px
+            >
+              {/* Define the gradient */}
+              <defs>
+                <linearGradient
+                  id="bgGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%">
+                  <stop offset="0%" stopColor="#3b82f6" /> {/* Lighter blue */}
+                  <stop offset="100%" stopColor="#1e40af" /> {/* Darker blue */}
+                </linearGradient>
+              </defs>
+
+              {/* Background with Flattened Top */}
+              <path
+                d="M50,15 C20,15 5,35 5,55 C5,75 25,95 50,95 C75,95 95,75 95,55 C95,35 80,15 50,15 Z"
+                fill="url(#bgGradient)"
+              />
+
+              {/* Axis Lines */}
+              <path
+                d="M25,85 L85,85"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+              <path
+                d="M25,25 L25,85"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+
+              {/* Chart Line */}
+              <polyline
+                points="25,85 40,60 55,70 70,45 85,30"
+                stroke="white"
+                strokeWidth="5"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+
+              {/* Points on the Line */}
+              <circle
+                cx="25"
+                cy="85"
+                r="6"
+                fill="#34d399"
+                stroke="white"
+                strokeWidth="2"
+              />
+              <circle
+                cx="40"
+                cy="60"
+                r="6"
+                fill="#34d399"
+                stroke="white"
+                strokeWidth="2"
+              />
+              <circle
+                cx="55"
+                cy="70"
+                r="6"
+                fill="#34d399"
+                stroke="white"
+                strokeWidth="2"
+              />
+              <circle
+                cx="70"
+                cy="45"
+                r="6"
+                fill="#34d399"
+                stroke="white"
+                strokeWidth="2"
+              />
+              <circle
+                cx="85"
+                cy="30"
+                r="6"
+                fill="#34d399"
+                stroke="white"
+                strokeWidth="2"
+              />
+            </svg>
+            <h1 className="app-title">Lead Tracker</h1>
+          </div>
 
           {/* Email verification message */}
           {currentUser && !currentUser.emailVerified && (
