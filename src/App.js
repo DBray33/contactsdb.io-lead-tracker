@@ -1561,8 +1561,7 @@ const App = () => {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 100 100"
-              style={{ height: '40px', marginRight: '12px' }} // Increased size from 32px to 40px
-            >
+              style={{ height: '40px', marginRight: '12px' }}>
               {/* Define the gradient */}
               <defs>
                 <linearGradient
@@ -1575,27 +1574,24 @@ const App = () => {
                   <stop offset="100%" stopColor="#1e40af" /> {/* Darker blue */}
                 </linearGradient>
               </defs>
-
               {/* Background with Flattened Top */}
               <path
                 d="M50,15 C20,15 5,35 5,55 C5,75 25,95 50,95 C75,95 95,75 95,55 C95,35 80,15 50,15 Z"
                 fill="url(#bgGradient)"
               />
-
-              {/* Axis Lines */}
+              {/* Axis Lines - pure white */}
               <path
                 d="M25,85 L85,85"
-                stroke="white"
+                stroke="#FFFFFF"
                 strokeWidth="3"
                 strokeLinecap="round"
               />
               <path
-                d="M25,25 L25,85"
-                stroke="white"
+                d="M25,20 L25,85"
+                stroke="#FFFFFF"
                 strokeWidth="3"
                 strokeLinecap="round"
               />
-
               {/* Chart Line */}
               <polyline
                 points="25,85 40,60 55,70 70,45 85,30"
@@ -1605,7 +1601,6 @@ const App = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-
               {/* Points on the Line */}
               <circle
                 cx="25"
