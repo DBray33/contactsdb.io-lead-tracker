@@ -25,6 +25,7 @@ import { leadService, listService } from './firebase/leadService';
 
 // Components
 import Settings from './components/Settings';
+import LinkifyText from './components/LinkifyText';
 
 // Authentication context
 import { useAuth } from './contexts/AuthContext';
@@ -2020,9 +2021,10 @@ const App = () => {
                                         {note.timestamp}
                                       </span>
                                     </div>
-                                    <div className="note-content">
-                                      {note.content}
-                                    </div>
+                                    <LinkifyText
+                                      text={note.content}
+                                      className="note-content"
+                                    />
                                   </li>
                                 ))}
                               </ul>
@@ -2270,7 +2272,10 @@ const App = () => {
                             ×
                           </button>
                         </div>
-                        <div className="note-content">{note.content}</div>
+                        <LinkifyText
+                          text={note.content}
+                          className="note-content"
+                        />
                       </li>
                     ))}
                   </ul>
@@ -2746,7 +2751,10 @@ const App = () => {
                             ×
                           </button>
                         </div>
-                        <div className="note-content">{note.content}</div>
+                        <LinkifyText
+                          text={note.content}
+                          className="note-content"
+                        />
                       </li>
                     ))}
                   </ul>

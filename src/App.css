@@ -829,6 +829,24 @@
   line-height: 1.4;
   color: #e5e7eb;
   white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Style for links in notes */
+.note-link {
+  color: #60a5fa; /* Blue color matching your app's theme */
+  text-decoration: underline;
+  transition: color 0.2s ease;
+  word-break: break-all; /* Ensure long URLs wrap properly */
+}
+
+.note-link:hover {
+  color: #93c5fd; /* Lighter blue on hover */
+  text-decoration: underline;
+}
+
+.note-link:active {
+  color: #3b82f6; /* Darker blue when clicked */
 }
 
 /* ==========================================================================
