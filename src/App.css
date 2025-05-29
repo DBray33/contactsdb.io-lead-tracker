@@ -113,6 +113,9 @@
   background-color: #111827;
   transition: width 0.3s;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .sidebar-hidden {
@@ -121,6 +124,9 @@
 
 .sidebar-content {
   padding: 1rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0; /* Important for Firefox */
 }
 
 .sidebar-title {
