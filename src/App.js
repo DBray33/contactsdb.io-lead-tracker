@@ -346,7 +346,6 @@ const App = () => {
   const { currentUser, logout } = useAuth();
 
   // Authentication state - added for Step 2
-  const [appConfig, setAppConfig] = useState(DEFAULT_APP_CONFIG);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -565,21 +564,11 @@ const App = () => {
 
   // Listen for authentication state changes - add this for Step 3
   useEffect(() => {
-    if (appConfig.requireAuth) {
-      // Authentication state is now handled by the context
-      // Just update local state based on currentUser from context
-      setUser(currentUser);
-      setAuthLoading(false);
-    } else {
-      // If auth is not required, set a default user
-      setUser({
-        email: 'demo@example.com',
-        displayName: 'Demo User',
-        uid: 'demo-user',
-      });
-      setAuthLoading(false);
-    }
-  }, [appConfig.requireAuth, currentUser]);
+    // Authentication state is now handled by the context
+    // Just update local state based on currentUser from context
+    setUser(currentUser);
+    setAuthLoading(false);
+  }, [currentUser]);
 
   // Only fetch data when user is authenticated - add this for Step 3
   useEffect(() => {
@@ -1522,14 +1511,6 @@ const App = () => {
             </ul>
           </div>
 
-          {/* Settings section */}
-          <div className="sidebar-section">
-            <div className="section-header">
-              <h3 className="section-title">Settings</h3>
-            </div>
-            <Settings appConfig={appConfig} setAppConfig={setAppConfig} />
-          </div>
-
           {/* User account section */}
           <div className="sidebar-section">
             <div className="section-header">
@@ -1540,7 +1521,7 @@ const App = () => {
               {currentUser && currentUser.displayName && (
                 <p className="display-name">{currentUser.displayName}</p>
               )}
-              {appConfig.requireAuth && currentUser && (
+              {currentUser && (
                 <button className="logout-button" onClick={handleSignOut}>
                   <LogOut size={16} /> Sign Out
                 </button>
