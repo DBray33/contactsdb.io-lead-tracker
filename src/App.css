@@ -15,6 +15,7 @@
    13. AUTHENTICATION STYLES
    14. SETTINGS & USER STYLES
    15. SCROLLBAR STYLES
+   16. MOBILE RESPONSIVE STYLES
    ========================================================================== */
 
 /* ==========================================================================
@@ -1338,7 +1339,6 @@ input:checked + .toggle-slider:before {
 /* ==========================================================================
    16. MOBILE RESPONSIVE STYLES
    ========================================================================== */
-/* Force phone links to be white */
 
 /* Mobile breakpoint for phones */
 @media screen and (max-width: 768px) {
@@ -1356,6 +1356,8 @@ input:checked + .toggle-slider:before {
     z-index: 999;
     width: 280px;
     height: 100vh;
+    height: -webkit-fill-available; /* Fix for iOS Safari */
+    max-height: 100vh; /* Fallback */
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     overscroll-behavior: contain;
@@ -1589,7 +1591,7 @@ input:checked + .toggle-slider:before {
   /* IMPORTANT FIX: Ensure sidebar content doesn't overlap with header */
   .sidebar-content {
     padding-top: 70px !important; /* THIS IS THE FIX - Push content below header */
-    height: 100%;
+    height: calc(100% - 70px); /* Subtract the padding from height */
     overflow-y: auto;
   }
 }
