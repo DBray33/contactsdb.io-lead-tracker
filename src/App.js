@@ -1736,15 +1736,24 @@ const App = () => {
                       {lead.contactPerson}
                     </td>
                     <td className="table-cell" data-label="Contact Info">
-                      <div
-                        className="contact-info"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent row expansion
-                          copyToClipboard(lead.phone, e);
-                        }}>
-                        {lead.phone}
-                        <span className="copy-tooltip">Click to copy</span>
-                      </div>
+                      {window.innerWidth <= 768 ? (
+                        <a
+                          href={`tel:${lead.phone}`}
+                          className="contact-info"
+                          onClick={(e) => e.stopPropagation()}>
+                          {lead.phone}
+                        </a>
+                      ) : (
+                        <div
+                          className="contact-info"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyToClipboard(lead.phone, e);
+                          }}>
+                          {lead.phone}
+                          <span className="copy-tooltip">Click to copy</span>
+                        </div>
+                      )}
                       <div
                         className="contact-info"
                         onClick={(e) => {
