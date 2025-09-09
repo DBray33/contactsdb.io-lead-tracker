@@ -1736,7 +1736,7 @@ const App = () => {
                       {lead.contactPerson}
                     </td>
                     <td className="table-cell" data-label="Contact Info">
-                      {window.innerWidth <= 768 ? (
+                      {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? (
                         <a
                           href={`tel:${lead.phone}`}
                           className="contact-info"

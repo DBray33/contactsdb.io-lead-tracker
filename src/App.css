@@ -1338,6 +1338,7 @@ input:checked + .toggle-slider:before {
 /* ==========================================================================
    16. MOBILE RESPONSIVE STYLES
    ========================================================================== */
+/* Force phone links to be white */
 
 /* Mobile breakpoint for phones */
 @media screen and (max-width: 768px) {
@@ -1469,9 +1470,10 @@ input:checked + .toggle-slider:before {
     background-color: #374151;
     border-radius: 0.5rem;
     padding: 0.75rem;
-    border: 1px solid #4b5563;
+    border: 2px solid #4b5563; /* Thicker border for mobile cards */
     width: 100%;
     box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Add shadow for depth */
   }
 
   .table-cell {
@@ -1521,6 +1523,20 @@ input:checked + .toggle-slider:before {
     margin-bottom: 0.25rem;
     word-break: break-all;
     text-align: left !important;
+  }
+
+  /* Style phone/email links on mobile - force override default link styles */
+  a.contact-info,
+  a.contact-info:link,
+  a.contact-info:visited {
+    color: inherit !important; /* Force parent text color */
+    text-decoration: none !important; /* Remove underline */
+  }
+
+  a.contact-info:hover,
+  a.contact-info:active {
+    text-decoration: underline !important; /* Show underline on hover only */
+    color: inherit !important; /* Keep same color on hover */
   }
 
   /* Social links stack vertically */
