@@ -1531,6 +1531,12 @@ const App = () => {
         </div>
       </div>
 
+      {/* Sidebar overlay for mobile */}
+      <div
+        className={`sidebar-overlay ${sidebarVisible ? 'active' : ''}`}
+        onClick={() => setSidebarVisible(false)}
+      />
+
       {/* Main content */}
       <div className="main-content">
         {/* Header */}
@@ -1723,9 +1729,13 @@ const App = () => {
                     data-id={lead.id}
                     onClick={(e) => toggleRowExpansion(lead.id, e)}
                     style={{ cursor: 'pointer' }}>
-                    <td className="table-cell">{lead.businessName}</td>
-                    <td className="table-cell">{lead.contactPerson}</td>
-                    <td className="table-cell">
+                    <td className="table-cell" data-label="Business">
+                      {lead.businessName}
+                    </td>
+                    <td className="table-cell" data-label="Contact">
+                      {lead.contactPerson}
+                    </td>
+                    <td className="table-cell" data-label="Contact Info">
                       <div
                         className="contact-info"
                         onClick={(e) => {
@@ -1745,7 +1755,7 @@ const App = () => {
                         <span className="copy-tooltip">Click to copy</span>
                       </div>
                     </td>
-                    <td className="table-cell">
+                    <td className="table-cell" data-label="Website">
                       {lead.hasWebsite ? (
                         <a
                           href={
@@ -1772,7 +1782,7 @@ const App = () => {
                         </div>
                       )}
                     </td>
-                    <td className="table-cell">
+                    <td className="table-cell" data-label="Social">
                       <div className="social-links">
                         {lead.socials.facebook && (
                           <a
@@ -1816,7 +1826,7 @@ const App = () => {
                         )}
                       </div>
                     </td>
-                    <td className="table-cell">
+                    <td className="table-cell" data-label="Interest">
                       <select
                         className="interest-select"
                         value={lead.interestLevel}
@@ -1863,9 +1873,13 @@ const App = () => {
                         </option>
                       </select>
                     </td>
-                    <td className="table-cell">{lead.industry}</td>
-                    <td className="table-cell">{lead.lastContactDate}</td>
-                    <td className="table-cell">
+                    <td className="table-cell" data-label="Industry">
+                      {lead.industry}
+                    </td>
+                    <td className="table-cell" data-label="Last Contact">
+                      {lead.lastContactDate}
+                    </td>
+                    <td className="table-cell" data-label="Status">
                       <select
                         className="contact-status-select"
                         value={lead.contactStatus}
@@ -1897,7 +1911,7 @@ const App = () => {
                         <option value="Lost">Lost</option>
                       </select>
                     </td>
-                    <td className="table-cell">
+                    <td className="table-cell" data-label="Methods">
                       <div className="contact-methods">
                         <button
                           className={`contact-button ${
@@ -1966,7 +1980,7 @@ const App = () => {
                         </button>
                       </div>
                     </td>
-                    <td className="table-cell">
+                    <td className="table-cell" data-label="Actions">
                       <button
                         className="edit-button"
                         onClick={(e) => {
